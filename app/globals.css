@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+:root {
+  --bg-dark: #07080a;
+  --bg-charcoal: #0e1015;
+  --bg-card: #12141a;
+  --bg-card-hover: #171922;
+  --crimson: #e11d48;
+  --crimson-glow: rgba(225, 29, 72, 0.35);
+  --crimson-dark: #881337;
+  --crimson-subtle: rgba(225, 29, 72, 0.12);
+  --text-white: #f3f4f6;
+  --text-gray: #9ca3af;
+  --text-muted: #6b7280;
+  --border-editorial: rgba(255, 255, 255, 0.09);
+  --border-crimson: rgba(225, 29, 72, 0.3);
+}
+
+@theme inline {
+  --color-bg-dark: var(--bg-dark);
+  --color-bg-charcoal: var(--bg-charcoal);
+  --color-bg-card: var(--bg-card);
+  --color-crimson: var(--crimson);
+  --color-text-white: var(--text-white);
+  --color-text-gray: var(--text-gray);
+  --color-text-muted: var(--text-muted);
+  --font-heading: var(--font-space-grotesk), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: #07080a;
+  color: #f3f4f6;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Lenis handles smooth scrolling; native scroll-behavior: smooth conflicts with Lenis and causes runaway scroll */
+}
+
+body {
+  background-color: #07080a;
+  color: #f3f4f6;
+  /* Use overflow-x: clip so horizontal overflow is clipped without breaking position: sticky */
+  overflow-x: clip;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07080a;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e11d48;
+}
+
+/* Selection */
+::selection {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+/* Cinematic film grain overlay */
+.film-grain {
+  background-image: url('/images/grain.png');
+  background-repeat: repeat;
+  pointer-events: none;
+  opacity: 0.28;
+  mix-blend-mode: overlay;
+}
+
+/* 3D and Perspective utilities */
+.perspective-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Editorial hairline borders */
+.border-editorial {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.border-crimson-subtle {
+  border-color: rgba(225, 29, 72, 0.25);
+}
+
+/* Glowing text effects */
+.glow-text-crimson {
+  text-shadow: 0 0 25px rgba(225, 29, 72, 0.45);
+}
+
+/* Camera HUD viewfinder mark */
+.hud-corner-tl {
+  border-top: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+.hud-corner-tr {
+  border-top: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+.hud-corner-bl {
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+.hud-corner-br {
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
