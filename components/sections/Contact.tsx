@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Mail, Phone, MapPin, Send, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, ArrowUpRight } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface ContactFormData {
@@ -15,6 +15,7 @@ interface ContactFormData {
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -25,22 +26,43 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
-    // Simulate API dispatch latency
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setIsSuccess(true);
-    reset();
+    setIsSuccess(false);
+    setErrorMessage(null);
 
-    // Trigger subtle cinematic confetti celebration
     try {
-      confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ["#e11d48", "#ffffff", "#881337"],
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
+
+      const result = (await response.json().catch(() => ({}))) as { error?: string };
+
+      if (!response.ok) {
+        setErrorMessage(
+          result.error || "Failed to send message. Please try again or email preethish94@gmail.com directly."
+        );
+        return;
+      }
+
+      setIsSuccess(true);
+      reset();
+
+      // Trigger subtle cinematic confetti celebration
+      try {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.8 },
+          colors: ["#e11d48", "#ffffff", "#881337"],
+        });
+      } catch {
+        // Ignore if canvas-confetti is unsupported
+      }
     } catch {
-      // Ignore if canvas-confetti is unsupported
+      setErrorMessage("Network error while sending message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -154,8 +176,21 @@ export default function Contact() {
               Send a Transmission
             </h3>
             <p className="text-xs font-mono text-zinc-400 mb-8 tracking-wider">
-              STRUCTURED DISPATCH // READY FOR DIRECT API INTEGRATION
+              STRUCTURED DISPATCH // DIRECT DELIVERY TO PREETHISH94@GMAIL.COM
             </p>
+
+            {errorMessage && (
+              <div
+                role="alert"
+                className="mb-8 p-4 bg-red-950/40 border border-[#e11d48]/50 text-red-200 flex items-start gap-3"
+              >
+                <AlertCircle className="w-5 h-5 text-[#e11d48] shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <strong className="font-bold block">Transmission Failed</strong>
+                  {errorMessage}
+                </div>
+              </div>
+            )}
 
             {isSuccess && (
               <div className="mb-8 p-4 bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 flex items-start gap-3">
