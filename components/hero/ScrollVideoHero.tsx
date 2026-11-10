@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Download } from "lucide-react";
 
 interface ScrollVideoHeroProps {
   initialSequence?: "hero" | "raising";
@@ -799,6 +799,16 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
                 >
                   <span>Initiate Dialogue</span>
                   <ArrowUpRight className="w-4 h-4" />
+                </a>
+
+                <a
+                  href="/resume/Preethish_DP_Resume.pdf"
+                  download="Preethish_DP_Resume.pdf"
+                  data-cursor-expand
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-none border border-[#e11d48]/60 bg-[#e11d48]/15 backdrop-blur-md text-white font-heading text-xs tracking-widest font-semibold uppercase transition-all duration-300 hover:bg-[#e11d48] hover:border-[#e11d48] shadow-[0_0_20px_rgba(225,29,72,0.2)]"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Resume</span>
                 </a>
               </div>
             </div>

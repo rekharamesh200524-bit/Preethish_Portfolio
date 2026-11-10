@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { Menu, X, ArrowUpRight, Download } from "lucide-react";
 
 const NAV_LINKS = [
   { name: "About", href: "#about" },
@@ -101,8 +101,18 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right Action / Contact Link */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* Right Action / Resume & Contact Links */}
+        <div className="hidden md:flex items-center gap-3">
+          <a
+            href="/resume/Preethish_DP_Resume.pdf"
+            download="Preethish_DP_Resume.pdf"
+            data-cursor-expand
+            className="flex items-center gap-1.5 px-3.5 py-2 border border-white/15 bg-black/40 hover:border-[#e11d48] hover:text-[#e11d48] text-zinc-200 text-xs font-heading font-semibold uppercase tracking-wider transition-all duration-300 rounded-none"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Resume</span>
+          </a>
+
           <a
             href="#contact"
             data-cursor-expand
@@ -138,14 +148,25 @@ export default function Navbar() {
               {link.name}
             </a>
           ))}
-          <a
-            href="#contact"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#e11d48] text-white font-heading text-xs font-bold uppercase tracking-widest mt-2"
-          >
-            <span>Let&apos;s Connect</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </a>
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <a
+              href="/resume/Preethish_DP_Resume.pdf"
+              download="Preethish_DP_Resume.pdf"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-2 px-4 py-3.5 border border-white/20 bg-white/5 text-white font-heading text-xs font-bold uppercase tracking-widest"
+            >
+              <Download className="w-4 h-4 text-[#e11d48]" />
+              <span>Resume</span>
+            </a>
+            <a
+              href="#contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#e11d48] text-white font-heading text-xs font-bold uppercase tracking-widest"
+            >
+              <span>Connect</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       )}
     </header>

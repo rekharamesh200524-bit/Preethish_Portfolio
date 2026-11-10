@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle, ArrowUpRight, Download } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface ContactFormData {
@@ -168,6 +168,26 @@ export default function Contact() {
                 STATUS: ACCEPTING CREATIVE BRIEFS &amp; EMPLOYMENT INQUIRIES
               </div>
             </div>
+
+            {/* Resume Download Card */}
+            <a
+              href="/resume/Preethish_DP_Resume.pdf"
+              download="Preethish_DP_Resume.pdf"
+              data-cursor-expand
+              className="group p-5 sm:p-6 border border-[#e11d48]/40 bg-[#0e1015] hover:bg-[#e11d48] transition-all duration-300 flex items-center justify-between gap-4"
+            >
+              <div>
+                <span className="text-[11px] font-mono text-[#e11d48] group-hover:text-white/90 uppercase tracking-widest block mb-1">
+                  Curriculum Vitae // PDF
+                </span>
+                <span className="font-heading text-base sm:text-lg font-bold text-white uppercase tracking-wide">
+                  Download Full Resume
+                </span>
+              </div>
+              <div className="w-10 h-10 border border-white/15 group-hover:border-white/40 bg-black/40 group-hover:bg-black/20 flex items-center justify-center shrink-0 transition-colors">
+                <Download className="w-5 h-5 text-[#e11d48] group-hover:text-white transition-colors" />
+              </div>
+            </a>
           </div>
 
           {/* Right Column: Accessible Contact Form (Col 6-12) */}
