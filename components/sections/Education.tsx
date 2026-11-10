@@ -249,6 +249,118 @@ function CircularScoreGauge({
 }
 
 /* ────────────────────────────────────────────────────────────────
+   SHARED MILESTONE CARD (USED IN BOTH MOBILE & DESKTOP VIEWPORTS)
+──────────────────────────────────────────────────────────────── */
+function EducationMilestoneCard({
+  milestone,
+}: {
+  milestone: EducationMilestone;
+}) {
+  return (
+    <motion.div
+      key={milestone.id}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-full bg-[#0e1015] border border-white/[0.08] rounded-2xl p-5 sm:p-8 lg:p-10 relative overflow-hidden shadow-2xl"
+    >
+      {/* Viewfinder Corner Reticles */}
+      <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 border-t-2 border-r-2 border-[#e11d48] rounded-tr-2xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-16 h-16 sm:w-20 sm:h-20 border-b-2 border-l-2 border-white/10 rounded-bl-2xl pointer-events-none" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
+        {/* LEFT: Project Photography & Dynamic Circular CGPA Gauge */}
+        <div className="lg:col-span-5 relative">
+          <div className="relative aspect-[16/10] sm:aspect-[4/3] rounded-xl overflow-hidden border border-white/10 group shadow-2xl bg-zinc-950">
+            <Image
+              src={milestone.image}
+              alt={milestone.title}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 40vw"
+              className="object-cover filter contrast-110 brightness-95 group-hover:scale-105 transition-transform duration-700 ease-out"
+            />
+
+            {/* Subtle Vignette Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
+
+            {/* Stage Identifier Tag */}
+            <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 max-w-[calc(100%-1.25rem)] truncate text-[9px] sm:text-[10px] font-mono text-[#e11d48] bg-black/70 backdrop-blur-md px-2.5 py-1 rounded border border-[#e11d48]/40">
+              DISCIPLINE: {milestone.field}
+            </div>
+
+            {/* Circular Score Gauge Floating on Image */}
+            <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:bottom-3 sm:left-3 sm:right-3 flex items-center justify-between">
+              <CircularScoreGauge
+                percentage={milestone.cgpaPercentage}
+                valueText={milestone.cgpa || "FIRST CLASS"}
+                labelText={milestone.scoreLabel}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: In-Depth Curriculum & Methodology Rigor */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Header Tag & Period */}
+          <div>
+            <div className="flex flex-wrap items-center gap-2 font-mono text-xs mb-1.5">
+              <span className="px-2.5 py-0.5 rounded bg-[#e11d48]/10 border border-[#e11d48]/30 text-[#e11d48] font-bold">
+                {milestone.categoryBadge}
+              </span>
+              <span className="text-zinc-600">{"//"}</span>
+              <span className="text-zinc-400">{milestone.period}</span>
+            </div>
+
+            <h3 className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-snug">
+              {milestone.title}
+            </h3>
+
+            <div className="flex flex-wrap items-center gap-2 mt-1.5 font-mono text-xs text-zinc-300">
+              <Building2 className="w-3.5 h-3.5 text-[#e11d48] shrink-0" />
+              <span className="font-semibold text-white">{milestone.institution}</span>
+              <span className="text-zinc-600 hidden sm:inline">•</span>
+              <span className="text-zinc-400 hidden sm:inline">{milestone.location}</span>
+            </div>
+          </div>
+
+          {/* Summary */}
+          <p className="text-xs sm:text-sm text-zinc-300 font-light leading-relaxed">
+            {milestone.summary}
+          </p>
+
+          {/* Highlights */}
+          <div className="space-y-1.5 pt-3 border-t border-white/[0.08]">
+            <div className="font-mono text-[10px] text-[#e11d48] uppercase tracking-wider font-semibold">
+              Core Methodologies &amp; Empirical Focus:
+            </div>
+            {milestone.keyHighlights.map((highlight, hi) => (
+              <div key={hi} className="flex items-start gap-2.5 text-xs text-zinc-400 font-light leading-relaxed">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#e11d48] shrink-0 mt-0.5" />
+                <span>{highlight}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Skills pills */}
+          <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/[0.08]">
+            {milestone.skills.map((skill) => (
+              <span
+                key={skill}
+                className="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-white/[0.04] text-zinc-300 border border-white/[0.08]"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────────
    MAIN SCROLL-PINNED STEPPER EDUCATION SECTION
 ──────────────────────────────────────────────────────────────── */
 export default function Education() {
@@ -257,11 +369,12 @@ export default function Education() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentStepFraction, setCurrentStepFraction] = useState(0);
 
-  // Scroll listener tracking continuous progress across milestones with rAF throttle
+  // Scroll listener tracking continuous progress across milestones on desktop viewports
   useEffect(() => {
     let ticking = false;
 
     const handleScroll = () => {
+      if (window.innerWidth < 1024) return;
       if (ticking) return;
       ticking = true;
 
@@ -300,8 +413,14 @@ export default function Education() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Smooth scroll directly to a specific milestone with comfortable centering
+  // Select a milestone directly on mobile or smooth-scroll to it on desktop
   const scrollToMilestone = (index: number) => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setCurrentIndex(index);
+      setScrollProgress(index / Math.max(1, MILESTONES.length - 1));
+      return;
+    }
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -324,12 +443,84 @@ export default function Education() {
     <section
       id="education"
       ref={containerRef}
-      className="relative bg-[#07080a] text-white border-t border-white/[0.08] min-h-[500vh] select-none"
+      className="relative bg-[#07080a] text-white border-t border-white/[0.08] lg:min-h-[500vh] select-none"
     >
       {/* ──────────────────────────────────────────────────────────
-          STICKY FULL-SCREEN TIMELINE VIEWPORT
+          MOBILE & TABLET FLOW LAYOUT (<lg) — NO CLIPPING
       ────────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between py-6 sm:py-8">
+      <div className="lg:hidden py-20 px-5 sm:px-8 relative overflow-hidden">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="pb-4 border-b border-white/[0.08]">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#e11d48] animate-pulse shadow-[0_0_10px_#e11d48]" />
+              <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#e11d48] font-medium">
+                05 // Academic Foundations &amp; Research
+              </span>
+            </div>
+            <h2 className="font-heading text-2xl sm:text-3xl font-black tracking-tight uppercase">
+              EDUCATION &amp; <span className="text-zinc-500 font-light">RESEARCH TIMELINE</span>
+            </h2>
+          </div>
+
+          {/* Clickable Mobile Stepper */}
+          <div className="bg-[#0e1015]/80 border border-white/[0.08] rounded-xl p-3">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {MILESTONES.map((m, idx) => {
+                const isActive = currentIndex === idx;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => scrollToMilestone(idx)}
+                    className={`py-2 px-2 rounded-lg border font-mono text-xs transition-all flex flex-col items-center justify-center ${
+                      isActive
+                        ? "bg-[#e11d48] border-white/60 text-white font-bold shadow-[0_0_14px_rgba(225,29,72,0.5)]"
+                        : "bg-black/40 border-white/10 text-zinc-400 hover:text-white"
+                    }`}
+                  >
+                    <span className="text-[10px] opacity-80">0{idx + 1}</span>
+                    <span className="font-bold">{m.yearNumber}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Full Unclipped Milestone Card */}
+          <AnimatePresence mode="wait">
+            <EducationMilestoneCard milestone={activeMilestone} />
+          </AnimatePresence>
+
+          {/* Mobile PREV / NEXT Controls */}
+          <div className="pt-2 flex items-center justify-between text-xs font-mono text-zinc-400">
+            <button
+              type="button"
+              onClick={() => scrollToMilestone(Math.max(0, currentIndex - 1))}
+              disabled={currentIndex === 0}
+              className="px-4 py-2 rounded border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            >
+              &larr; PREV
+            </button>
+            <span className="text-zinc-300 font-bold">
+              0{currentIndex + 1} / 0{MILESTONES.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => scrollToMilestone(Math.min(MILESTONES.length - 1, currentIndex + 1))}
+              disabled={currentIndex === MILESTONES.length - 1}
+              className="px-4 py-2 rounded border border-white/10 hover:border-[#e11d48] hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            >
+              NEXT &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ──────────────────────────────────────────────────────────
+          DESKTOP STICKY FULL-SCREEN TIMELINE VIEWPORT (lg+)
+      ────────────────────────────────────────────────────────── */}
+      <div className="hidden lg:flex sticky top-0 h-screen w-full overflow-hidden flex-col justify-between py-6 sm:py-8">
         {/* Background ambient lighting */}
         <div className="absolute top-1/4 -left-48 w-96 h-96 bg-red-600/[0.07] blur-[160px] rounded-full pointer-events-none" />
         <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-[#e11d48]/[0.06] blur-[170px] rounded-full pointer-events-none" />
@@ -344,9 +535,7 @@ export default function Education() {
         />
 
         <div className="max-w-7xl mx-auto px-6 sm:px-10 w-full flex-1 flex flex-col justify-between relative z-10">
-          {/* ──────────────────────────────────────────────────────────
-              1. COMPACT EDITORIAL HEADER WITH LIVE STEPPER TELEMETRY
-          ────────────────────────────────────────────────────────── */}
+          {/* 1. COMPACT EDITORIAL HEADER WITH LIVE STEPPER TELEMETRY */}
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -387,9 +576,7 @@ export default function Education() {
             </div>
           </div>
 
-          {/* ──────────────────────────────────────────────────────────
-              2. THE BIG CHRONO-STEPPER RAIL (TRACKS SCROLL PROGRESS)
-          ────────────────────────────────────────────────────────── */}
+          {/* 2. THE BIG CHRONO-STEPPER RAIL (TRACKS SCROLL PROGRESS) */}
           <div className="my-3 py-2 bg-[#0e1015]/80 border border-white/[0.08] rounded-2xl px-5 sm:px-8 relative shadow-lg">
             <div className="relative py-3">
               {/* Inactive Base Rail */}
@@ -412,6 +599,7 @@ export default function Education() {
                   return (
                     <button
                       key={m.id}
+                      type="button"
                       onClick={() => scrollToMilestone(idx)}
                       className="group/node relative flex flex-col items-center focus:outline-none cursor-pointer"
                     >
@@ -452,117 +640,14 @@ export default function Education() {
             </div>
           </div>
 
-          {/* ──────────────────────────────────────────────────────────
-              3. BIG CINEMATIC HERO SHOWCASE STAGE (STEPS WITH SCROLL)
-          ────────────────────────────────────────────────────────── */}
+          {/* 3. BIG CINEMATIC HERO SHOWCASE STAGE (STEPS WITH SCROLL) */}
           <div className="flex-1 my-2 flex items-center">
             <AnimatePresence mode="wait">
-              <motion.div
-                key={activeMilestone.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="w-full bg-[#0e1015] border border-white/[0.08] rounded-2xl p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-2xl"
-              >
-                {/* Viewfinder Corner Reticles */}
-                <div className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-[#e11d48] rounded-tr-2xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-20 h-20 border-b-2 border-l-2 border-white/10 rounded-bl-2xl pointer-events-none" />
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
-                  {/* LEFT: Project Photography & Dynamic Circular CGPA Gauge */}
-                  <div className="lg:col-span-5 relative">
-                    <div className="relative aspect-[16/10] sm:aspect-[4/3] rounded-xl overflow-hidden border border-white/10 group shadow-2xl bg-zinc-950">
-                      <Image
-                        src={activeMilestone.image}
-                        alt={activeMilestone.title}
-                        fill
-                        priority
-                        sizes="(max-width: 1024px) 100vw, 40vw"
-                        className="object-cover filter contrast-110 brightness-95 group-hover:scale-105 transition-transform duration-700 ease-out"
-                      />
-
-                      {/* Subtle Vignette Gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
-
-                      {/* Stage Identifier Tag */}
-                      <div className="absolute top-3 left-3 text-[10px] font-mono text-[#e11d48] bg-black/70 backdrop-blur-md px-2.5 py-1 rounded border border-[#e11d48]/40">
-                        DISCIPLINE: {activeMilestone.field}
-                      </div>
-
-                      {/* Circular Score Gauge Floating on Image */}
-                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                        <CircularScoreGauge
-                          percentage={activeMilestone.cgpaPercentage}
-                          valueText={activeMilestone.cgpa || "FIRST CLASS"}
-                          labelText={activeMilestone.scoreLabel}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* RIGHT: In-Depth Curriculum & Methodology Rigor */}
-                  <div className="lg:col-span-7 space-y-4">
-                    {/* Header Tag & Period */}
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2 font-mono text-xs mb-1.5">
-                        <span className="px-2.5 py-0.5 rounded bg-[#e11d48]/10 border border-[#e11d48]/30 text-[#e11d48] font-bold">
-                          {activeMilestone.categoryBadge}
-                        </span>
-                        <span className="text-zinc-600">{"//"}</span>
-                        <span className="text-zinc-400">{activeMilestone.period}</span>
-                      </div>
-
-                      <h3 className="font-heading text-xl sm:text-2xl lg:text-3xl font-black text-white tracking-tight leading-snug">
-                        {activeMilestone.title}
-                      </h3>
-
-                      <div className="flex items-center gap-2 mt-1.5 font-mono text-xs text-zinc-300">
-                        <Building2 className="w-3.5 h-3.5 text-[#e11d48]" />
-                        <span className="font-semibold text-white">{activeMilestone.institution}</span>
-                        <span className="text-zinc-600 hidden sm:inline">•</span>
-                        <span className="text-zinc-400 hidden sm:inline">{activeMilestone.location}</span>
-                      </div>
-                    </div>
-
-                    {/* Summary */}
-                    <p className="text-xs sm:text-sm text-zinc-300 font-light leading-relaxed">
-                      {activeMilestone.summary}
-                    </p>
-
-                    {/* Highlights */}
-                    <div className="space-y-1.5 pt-3 border-t border-white/[0.08]">
-                      <div className="font-mono text-[10px] text-[#e11d48] uppercase tracking-wider font-semibold">
-                        Core Methodologies &amp; Empirical Focus:
-                      </div>
-                      {activeMilestone.keyHighlights.map((highlight, hi) => (
-                        <div key={hi} className="flex items-start gap-2.5 text-xs text-zinc-400 font-light leading-relaxed">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#e11d48] shrink-0 mt-0.5" />
-                          <span>{highlight}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Skills pills */}
-                    <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/[0.08]">
-                      {activeMilestone.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="font-mono text-[11px] px-2.5 py-0.5 rounded-full bg-white/[0.04] text-zinc-300 border border-white/[0.08]"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+              <EducationMilestoneCard milestone={activeMilestone} />
             </AnimatePresence>
           </div>
 
-          {/* ──────────────────────────────────────────────────────────
-              4. FOOTER: PREV / NEXT NAVIGATION & ACADEMIC VERIFICATION
-          ────────────────────────────────────────────────────────── */}
+          {/* 4. FOOTER: PREV / NEXT NAVIGATION & ACADEMIC VERIFICATION */}
           <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono text-zinc-400">
             <div className="flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5 text-[#e11d48]" />
@@ -574,6 +659,7 @@ export default function Education() {
 
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => scrollToMilestone(Math.max(0, currentIndex - 1))}
                 disabled={currentIndex === 0}
                 className="px-3 py-1 rounded border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:pointer-events-none transition-colors"
@@ -581,6 +667,7 @@ export default function Education() {
                 &larr; PREV
               </button>
               <button
+                type="button"
                 onClick={() => scrollToMilestone(Math.min(MILESTONES.length - 1, currentIndex + 1))}
                 disabled={currentIndex === MILESTONES.length - 1}
                 className="px-3 py-1 rounded border border-white/10 hover:border-[#e11d48] hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"

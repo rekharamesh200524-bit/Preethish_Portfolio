@@ -180,13 +180,11 @@ export default function Tools() {
     <div
       ref={containerRef}
       id="tools"
-      className="relative w-full"
-      style={{ height: "220vh" }}
+      className="relative w-full h-[160vh] sm:h-[220vh]"
     >
       {/* ══ STICKY VIEWPORT ══════════════════════════════════════ */}
       <div
-        className="sticky top-0 w-full overflow-hidden bg-black"
-        style={{ height: "100vh" }}
+        className="sticky top-0 w-full h-dvh overflow-hidden bg-black"
       >
         {/* ── VIDEO (scrubbed by scroll) ────────────────────────── */}
         <video

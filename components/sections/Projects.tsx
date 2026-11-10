@@ -85,13 +85,13 @@ export default function Projects() {
         );
 
   return (
-    <section id="projects" className="relative py-28 sm:py-36 bg-[#07080a] text-white border-t border-white/[0.08]">
+    <section id="projects" className="relative py-20 sm:py-28 md:py-36 bg-[#07080a] text-white border-t border-white/[0.08]">
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-red-600/10 blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-10">
+      <div className="max-w-7xl mx-auto px-5 sm:px-10">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-16">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <span className="w-2 h-2 rounded-full bg-[#e11d48]" />
@@ -165,13 +165,13 @@ export default function Projects() {
               </div>
 
               {/* Content Description Box */}
-              <div className="p-8">
-                <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-2">
-                  <span>{project.organization}</span>
-                  <span className="text-zinc-600">{"//"} 0{idx + 1}</span>
+              <div className="p-5 sm:p-8">
+                <div className="flex items-center justify-between gap-2 text-xs font-mono text-zinc-400 mb-2">
+                  <span className="truncate">{project.organization}</span>
+                  <span className="text-zinc-600 shrink-0">{"//"} 0{idx + 1}</span>
                 </div>
 
-                <h3 className="font-heading text-2xl font-bold text-white group-hover:text-white transition-colors mb-3 flex items-center justify-between gap-4">
+                <h3 className="font-heading text-xl sm:text-2xl font-bold text-white group-hover:text-white transition-colors mb-3 flex items-center justify-between gap-4">
                   <span>{project.title}</span>
                   <ArrowUpRight className="w-5 h-5 text-zinc-500 group-hover:text-[#e11d48] group-hover:translate-x-1 group-hover:-translate-y-1 transition-all shrink-0" />
                 </h3>
@@ -204,26 +204,27 @@ export default function Projects() {
           onClick={() => setActiveProject(null)}
         >
           <div
-            className="relative max-w-4xl w-full bg-[#0e1015] border border-white/20 p-6 sm:p-10 max-h-[90vh] overflow-y-auto"
+            className="relative max-w-4xl w-full bg-[#0e1015] border border-white/20 p-5 sm:p-10 max-h-[90dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActiveProject(null)}
-              className="absolute top-6 right-6 p-2 text-zinc-400 hover:text-white border border-white/10 hover:border-[#e11d48] transition-colors"
+              aria-label="Close project details"
+              className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 text-zinc-400 hover:text-white border border-white/10 hover:border-[#e11d48] transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            <div className="font-mono text-xs text-[#e11d48] tracking-widest uppercase mb-2">
+            <div className="font-mono text-xs text-[#e11d48] tracking-widest uppercase mb-2 pr-12">
               {activeProject.category} {"//"} {activeProject.organization}
             </div>
 
-            <h3 className="font-heading text-3xl sm:text-4xl font-black text-white mb-6">
+            <h3 className="font-heading text-2xl sm:text-4xl font-black text-white mb-6 pr-10">
               {activeProject.title}
             </h3>
 
-            <div className="relative aspect-video w-full mb-8 overflow-hidden border border-white/10">
+            <div className="relative aspect-video w-full mb-6 sm:mb-8 overflow-hidden border border-white/10">
               <Image
                 src={activeProject.image}
                 alt={activeProject.title}
@@ -232,7 +233,7 @@ export default function Projects() {
               />
             </div>
 
-            <p className="text-base text-zinc-300 leading-relaxed font-light mb-8">
+            <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-light mb-8">
               {activeProject.description}
             </p>
 
@@ -241,7 +242,7 @@ export default function Projects() {
                 <div className="font-mono text-xs text-zinc-500 uppercase">Role Applied</div>
                 <div className="font-heading text-lg font-bold text-white">{activeProject.role}</div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {activeProject.deliverables.map((item) => (
                   <span
                     key={item}

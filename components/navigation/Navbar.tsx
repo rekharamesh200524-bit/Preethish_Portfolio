@@ -119,6 +119,7 @@ export default function Navbar() {
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="md:hidden p-2 text-zinc-300 hover:text-white focus:outline-none"
           aria-label="Toggle navigation menu"
+          aria-expanded={mobileMenuOpen}
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -126,13 +127,13 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-[60px] bg-[#07080a]/95 backdrop-blur-2xl border-b border-white/10 px-6 py-8 flex flex-col gap-5 shadow-2xl">
+        <div className="md:hidden absolute inset-x-0 top-full max-h-[calc(100dvh-100%)] overflow-y-auto bg-[#07080a]/95 backdrop-blur-2xl border-b border-white/10 px-6 py-6 flex flex-col gap-3 shadow-2xl">
           {NAV_LINKS.map((link) => (
             <a
               key={link.name}
               href={link.href}
               onClick={() => setMobileMenuOpen(false)}
-              className="font-heading text-sm uppercase tracking-widest text-zinc-300 hover:text-[#e11d48] transition-colors py-1 border-b border-white/5"
+              className="font-heading text-sm uppercase tracking-widest text-zinc-300 hover:text-[#e11d48] transition-colors py-2.5 border-b border-white/5"
             >
               {link.name}
             </a>
@@ -140,7 +141,7 @@ export default function Navbar() {
           <a
             href="#contact"
             onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#e11d48] text-white font-heading text-xs font-bold uppercase tracking-widest mt-2"
+            className="flex items-center justify-center gap-2 px-4 py-3.5 bg-[#e11d48] text-white font-heading text-xs font-bold uppercase tracking-widest mt-2"
           >
             <span>Let&apos;s Connect</span>
             <ArrowUpRight className="w-4 h-4" />

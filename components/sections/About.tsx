@@ -86,7 +86,7 @@ export default function About() {
     <section
       id="about"
       ref={sectionRef}
-      className="relative py-28 sm:py-36 bg-[#07080a] text-white border-t border-white/[0.08] overflow-hidden"
+      className="relative py-20 sm:py-28 md:py-36 bg-[#07080a] text-white border-t border-white/[0.08] overflow-hidden"
     >
       {/* Ambient background glows */}
       <div className="absolute top-1/4 -left-48 w-96 h-96 bg-red-600/[0.08] blur-[140px] rounded-full pointer-events-none" />
@@ -195,7 +195,7 @@ export default function About() {
             transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1.0] }}
             className="lg:col-span-5"
           >
-            <div className="bg-[#0e1015] border border-white/[0.08] hover:border-white/[0.15] transition-colors p-8 rounded-xl relative group">
+            <div className="bg-[#0e1015] border border-white/[0.08] hover:border-white/[0.15] transition-colors p-5 sm:p-8 rounded-xl relative group">
               {/* Crimson corner accent mark */}
               <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-[#e11d48] rounded-tr-xl pointer-events-none" />
 
@@ -212,7 +212,7 @@ export default function About() {
               <div className="space-y-4">
                 {COMPETENCIES.map((comp, idx) => (
                   <div key={idx} className="group/row">
-                    <div className="flex items-center justify-between font-mono text-xs mb-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-x-2 font-mono text-xs mb-1.5">
                       <span className="text-zinc-300 group-hover/row:text-white transition-colors">
                         {comp.name}
                       </span>

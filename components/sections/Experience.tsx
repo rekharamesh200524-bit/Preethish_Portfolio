@@ -973,11 +973,11 @@ export default function Experience() {
           onClick={() => setSelectedExp(null)}
         >
           <div
-            className="relative w-full max-w-2xl bg-[#0b0c13] border border-amber-500/40 rounded-[3px] shadow-[0_25px_80px_rgba(0,0,0,0.95),0_0_40px_rgba(245,158,11,0.15)] overflow-hidden"
+            className="relative w-full max-w-2xl max-h-[90dvh] flex flex-col bg-[#0b0c13] border border-amber-500/40 rounded-[3px] shadow-[0_25px_80px_rgba(0,0,0,0.95),0_0_40px_rgba(245,158,11,0.15)] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Modal Media Strip */}
-            <div className="relative w-full h-[140px] sm:h-[180px] bg-black">
+            <div className="relative w-full h-[140px] sm:h-[180px] shrink-0 bg-black">
               <Image
                 src={selectedExp.image}
                 alt={selectedExp.role}
@@ -1016,7 +1016,7 @@ export default function Experience() {
             </div>
 
             {/* Modal Body Dossier */}
-            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+            <div className="p-5 sm:p-6 space-y-4 flex-1 overflow-y-auto">
               {/* Meta: Company, Period, Location */}
               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/[0.08] text-xs font-mono">
                 <div className="flex items-center gap-1.5 text-amber-400 font-bold">
@@ -1225,14 +1225,15 @@ export default function Experience() {
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
 
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+            <div className="mt-2.5 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveIndex((p) => Math.max(0, p - 1));
                 }}
                 disabled={activeIndex === 0}
-                className="px-2.5 py-1 bg-white/5 border border-white/10 disabled:opacity-25 text-xs font-mono text-zinc-300 flex items-center gap-1"
+                className="px-3.5 py-2 bg-white/5 border border-white/10 disabled:opacity-25 text-xs font-mono text-zinc-300 flex items-center gap-1"
               >
                 <ChevronLeft className="w-3.5 h-3.5" /> PREV
               </button>
@@ -1242,12 +1243,13 @@ export default function Experience() {
               </span>
 
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveIndex((p) => Math.min(EXPERIENCES.length - 1, p + 1));
                 }}
                 disabled={activeIndex === EXPERIENCES.length - 1}
-                className="px-2.5 py-1 bg-amber-500/20 border border-amber-500/40 disabled:opacity-25 text-xs font-mono text-amber-300 flex items-center gap-1"
+                className="px-3.5 py-2 bg-amber-500/20 border border-amber-500/40 disabled:opacity-25 text-xs font-mono text-amber-300 flex items-center gap-1"
               >
                 NEXT <ChevronRight className="w-3.5 h-3.5" />
               </button>

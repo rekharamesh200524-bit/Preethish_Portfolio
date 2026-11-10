@@ -169,7 +169,8 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
       const drawW = iw * scale;
       const drawH = ih * scale;
 
-      const isDesktop = cw > 768;
+      // Use CSS viewport width rather than DPR-scaled canvas pixels so Retina phones stay centered
+      const isDesktop = window.innerWidth > 768;
 
       // Horizontal: shift subject slightly more to the right (~63% of screen width)
       const centerOffX = (cw - drawW) / 2;
@@ -627,14 +628,13 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         revealPointsRef.current = [];
         lastMousePosRef.current = null;
       }}
-      className="relative w-full h-[220vh] bg-[#07080a] select-none"
+      className="relative w-full h-[180vh] sm:h-[220vh] bg-[#07080a] select-none"
       aria-label="Interactive Video Scroll Hero"
     >
       {/* Pinned Sticky Viewport Window */}
       <div
         ref={stageRef}
-        className="sticky top-0 w-full h-screen overflow-hidden bg-[#07080a] flex items-center justify-center will-change-transform z-10"
-        style={{ position: "sticky", top: 0, height: "100vh" }}
+        className="sticky top-0 w-full h-dvh overflow-hidden bg-[#07080a] flex items-center justify-center will-change-transform z-10"
       >
         {/* Layer 1: Scroll-driven Canvas Video Player with 3D tilt */}
         <div
@@ -696,11 +696,11 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         </div>
 
         {/* Layer 3: Top Camera Meta Bar & Video Mode Switcher */}
-        <div className="absolute top-20 sm:top-24 left-0 right-0 z-30 flex items-center justify-between px-6 sm:px-12 pointer-events-none">
+        <div className="absolute top-[72px] sm:top-24 left-0 right-0 z-30 flex items-center justify-between px-5 sm:px-12 pointer-events-none">
           {/* Top Left: Camera Status or Alter Ego Alert */}
           {isAlterEgoActive ? (
             <div
-              className={`flex items-center gap-2.5 px-4 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono tracking-widest animate-pulse shadow-2xl transition-all duration-300 ${alterEgoChar === "noir"
+              className={`flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full border backdrop-blur-md text-[10px] sm:text-[11px] font-mono tracking-widest animate-pulse shadow-2xl transition-all duration-300 ${alterEgoChar === "noir"
                 ? "border-zinc-300/70 bg-black/90 text-white shadow-[0_0_25px_rgba(255,255,255,0.35)]"
                 : "border-red-500/60 bg-black/85 text-red-400 shadow-[0_0_25px_rgba(225,29,72,0.45)]"
                 }`}
@@ -715,7 +715,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-3 px-3.5 py-1.5 rounded-full border border-white/10 bg-black/60 backdrop-blur-md text-[11px] font-mono tracking-widest text-zinc-300">
+            <div className="flex items-center gap-2.5 sm:gap-3 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full border border-white/10 bg-black/60 backdrop-blur-md text-[10px] sm:text-[11px] font-mono tracking-widest text-zinc-300">
               <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
               <span className="font-semibold text-white">REC</span>
               <span className="text-zinc-600">|</span>
@@ -727,7 +727,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         </div>
 
         {/* Layer 4: Editorial Content Overlay */}
-        <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between p-6 sm:p-10 md:p-14 lg:p-16">
+        <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between px-5 pb-6 pt-28 sm:px-10 sm:pb-10 sm:pt-36 md:px-14 md:pb-14 lg:px-16 lg:pb-16">
           {/* Upper Left Monogram */}
           <div
             className={`transition-all duration-1000 ease-out pointer-events-auto ${isRevealed ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8"
@@ -736,7 +736,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
               transform: `translate3d(calc(var(--hud-x, 0) * 6px), calc(var(--hud-y, 0) * 4px), 0)`,
             }}
           >
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-white leading-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] max-w-xl xl:max-w-2xl">
+            <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-white leading-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] max-w-xl xl:max-w-2xl">
               PREETHISH <span className="text-[#e11d48]">D P</span>
             </h1>
             <p className="mt-2 text-xs sm:text-sm font-mono tracking-widest text-zinc-400 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
@@ -745,7 +745,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
           </div>
 
           {/* Lower Grid Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-end w-full">
             {/* Lower Left: Titles & CTA */}
             <div
               className={`lg:col-span-8 transition-all duration-1000 delay-300 ease-out pointer-events-auto ${isRevealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
@@ -755,38 +755,38 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
               }}
             >
               {/* Identity List */}
-              <div className="space-y-1 sm:space-y-1.5 mb-5 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-                <div className="flex items-center gap-3">
+              <div className="space-y-1 sm:space-y-1.5 mb-4 sm:mb-5 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+                <div className="flex items-center gap-2.5 sm:gap-3">
                   <span className="font-mono text-xs text-[#e11d48]">01</span>
-                  <h2 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
+                  <h2 className="font-heading text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
                     GRAPHIC DESIGNER
                   </h2>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3">
                   <span className="font-mono text-xs text-zinc-500">02</span>
-                  <h2 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white/80">
+                  <h2 className="font-heading text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-white/80">
                     DIGITAL MARKETER
                   </h2>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 sm:gap-3">
                   <span className="font-mono text-xs text-[#e11d48]">03</span>
-                  <h2 className="font-heading text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
+                  <h2 className="font-heading text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
                     VISUAL STORYTELLER
                   </h2>
                 </div>
               </div>
 
               {/* Exact Bio text */}
-              <p className="max-w-xl text-xs sm:text-sm md:text-base text-zinc-200/90 font-normal leading-relaxed border-l-2 border-[#e11d48] pl-4 py-1 bg-black/40 backdrop-blur-sm">
+              <p className="max-w-xl text-xs sm:text-sm md:text-base text-zinc-200/90 font-normal leading-relaxed border-l-2 border-[#e11d48] pl-3 sm:pl-4 py-1 bg-black/40 backdrop-blur-sm">
                 Creating visual identities, digital experiences, and stories that connect brands with people.
               </p>
 
               {/* Direct CTA Buttons */}
-              <div className="mt-6 flex flex-wrap items-center gap-3 sm:gap-4">
+              <div className="mt-5 sm:mt-6 flex flex-wrap items-center gap-2.5 sm:gap-4">
                 <a
                   href="#projects"
                   data-cursor-expand
-                  className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-none bg-white text-black font-heading text-xs tracking-widest font-bold uppercase transition-all duration-300 hover:bg-[#e11d48] hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-none bg-white text-black font-heading text-xs tracking-widest font-bold uppercase transition-all duration-300 hover:bg-[#e11d48] hover:text-white shadow-[0_0_20px_rgba(255,255,255,0.2)]"
                 >
                   <span>Explore Works</span>
                   <ArrowDownRight className="w-4 h-4" />
@@ -795,7 +795,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
                 <a
                   href="#contact"
                   data-cursor-expand
-                  className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-6 sm:py-3 rounded-none border border-white/20 bg-black/60 backdrop-blur-md text-white font-heading text-xs tracking-widest font-semibold uppercase transition-all duration-300 hover:border-[#e11d48] hover:bg-[#e11d48]/15"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-none border border-white/20 bg-black/60 backdrop-blur-md text-white font-heading text-xs tracking-widest font-semibold uppercase transition-all duration-300 hover:border-[#e11d48] hover:bg-[#e11d48]/15"
                 >
                   <span>Initiate Dialogue</span>
                   <ArrowUpRight className="w-4 h-4" />

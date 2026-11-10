@@ -244,19 +244,19 @@ function ColorGradingLab() {
         <div className="absolute inset-x-0 bottom-0 h-4 bg-black/90 pointer-events-none" />
 
         {/* Top Scope Telemetry Readout */}
-        <div className="absolute top-6 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-white/90 bg-black/75 backdrop-blur-md px-3 py-1 rounded border border-white/10 pointer-events-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#e11d48] animate-pulse" />
-            <span className="font-bold">DAVINCI COLOR WHEEL // LIVE</span>
+        <div className="absolute top-5 left-2.5 right-2.5 sm:top-6 sm:left-3 sm:right-3 flex items-center justify-between gap-2 text-[9px] sm:text-[10px] font-mono text-white/90 bg-black/75 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded border border-white/10 pointer-events-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="w-2 h-2 rounded-full bg-[#e11d48] animate-pulse shrink-0" />
+            <span className="font-bold truncate">DAVINCI COLOR WHEEL // LIVE</span>
           </div>
-          <div className="text-zinc-400">
+          <div className="text-zinc-400 hidden sm:block shrink-0">
             IRE 100 // LOG-C &rarr; REC.709
           </div>
         </div>
 
         {/* Embedded Real-Time RGB Waveform Scope (Bottom Right) */}
-        <div className="absolute bottom-6 right-3 w-40 sm:w-48 h-20 bg-black/85 backdrop-blur-md border border-white/20 rounded-lg p-1 shadow-lg pointer-events-none">
-          <div className="flex items-center justify-between text-[8px] font-mono text-zinc-400 px-1 mb-0.5">
+        <div className="absolute bottom-5 right-2.5 sm:bottom-6 sm:right-3 w-32 sm:w-48 h-16 sm:h-20 bg-black/85 backdrop-blur-md border border-white/20 rounded-lg p-1 shadow-lg pointer-events-none">
+          <div className="flex items-center justify-between text-[7px] sm:text-[8px] font-mono text-zinc-400 px-1 mb-0.5">
             <span>RGB WAVEFORM</span>
             <span className="text-emerald-400">SYNCED</span>
           </div>
@@ -264,7 +264,7 @@ function ColorGradingLab() {
             ref={waveformCanvasRef}
             width={180}
             height={60}
-            className="w-full h-14 block rounded"
+            className="w-full h-10 sm:h-14 block rounded"
           />
         </div>
       </div>
@@ -392,7 +392,7 @@ function BrandTypographyLab() {
   return (
     <div className="flex flex-col h-full space-y-4">
       {/* Live Interactive Specimen Canvas */}
-      <div className="relative h-56 sm:h-64 rounded-xl overflow-hidden border border-white/15 bg-[#0a0c10] flex flex-col justify-between p-6 shadow-2xl">
+      <div className="relative min-h-[14rem] sm:h-64 rounded-xl overflow-hidden border border-white/15 bg-[#0a0c10] flex flex-col justify-between p-4 sm:p-6 shadow-2xl">
         {showGridGuide && (
           <div
             className="absolute inset-0 pointer-events-none opacity-20"
@@ -423,25 +423,25 @@ function BrandTypographyLab() {
           </button>
         </div>
 
-        <div className="my-auto z-10 transition-all duration-75">
+        <div className="my-auto py-3 z-10 transition-all duration-75 min-w-0">
           <h3
-            className="font-heading tracking-tight leading-none uppercase select-none"
+            className="font-heading tracking-tight leading-none uppercase select-none break-words"
             style={{
               fontWeight,
               letterSpacing: `${letterSpacing}em`,
-              fontSize: `${fontSize}px`,
+              fontSize: `clamp(18px, 5.5vw, ${fontSize}px)`,
               color: selectedSwatch,
               textShadow: selectedSwatch === "#0e1015" ? "0 0 1px rgba(255,255,255,0.4)" : "none",
             }}
           >
             CRAFTING VISUAL LEGACIES
           </h3>
-          <p className="font-mono text-xs text-zinc-400 mt-2 tracking-widest uppercase">
+          <p className="font-mono text-[10px] sm:text-xs text-zinc-400 mt-2 tracking-widest uppercase">
             GEOMETRIC VECTOR MASTERY // CHENNAI 2026
           </p>
         </div>
 
-        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 z-10 pt-2 border-t border-white/[0.08]">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono text-zinc-500 z-10 pt-2 border-t border-white/[0.08]">
           <span>WEIGHT: {fontWeight}</span>
           <span>KERNING: {letterSpacing.toFixed(2)}em</span>
           <span>SIZE: {fontSize}PX</span>
@@ -654,9 +654,9 @@ function GrowthMarketingLab() {
   return (
     <div className="flex flex-col h-full space-y-4">
       {/* Upper Split: Radar Chart & Live Keyword Monitor */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 h-56 sm:h-64">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:h-64">
         {/* Left: Animated Radar Canvas (7 cols) */}
-        <div className="sm:col-span-7 relative rounded-xl border border-white/15 bg-[#0a0c12] p-3 flex flex-col justify-between overflow-hidden shadow-2xl">
+        <div className="sm:col-span-7 h-56 sm:h-auto relative rounded-xl border border-white/15 bg-[#0a0c12] p-3 flex flex-col justify-between overflow-hidden shadow-2xl">
           <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
             <span className="flex items-center gap-1.5 text-white font-bold">
               <Activity className="w-3.5 h-3.5 text-sky-400" />
@@ -682,12 +682,12 @@ function GrowthMarketingLab() {
               { kw: "Film Post-Production Studio", rank: "#2", volume: "8.6K", trend: "+185%" },
               { kw: "Google Ads High-ROAS Agency", rank: "#1", volume: "19.4K", trend: "+420%" },
             ].map((k) => (
-              <div key={k.kw} className="p-2 rounded bg-black/60 border border-white/10 flex items-center justify-between">
-                <div>
-                  <div className="font-heading text-[11px] font-bold text-white truncate max-w-[120px]">{k.kw}</div>
+              <div key={k.kw} className="p-2 rounded bg-black/60 border border-white/10 flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-heading text-[11px] font-bold text-white truncate">{k.kw}</div>
                   <div className="font-mono text-[8px] text-zinc-500">{k.volume} VOL // {k.trend}</div>
                 </div>
-                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
                   {k.rank}
                 </span>
               </div>
@@ -825,20 +825,20 @@ function CineOpticsLab() {
         </div>
 
         {/* Camera HUD Telemetry Strip */}
-        <div className="absolute top-3 left-4 right-4 flex items-center justify-between text-[9px] font-mono text-white bg-black/75 backdrop-blur-md px-3 py-1 rounded border border-white/10 z-30 pointer-events-none">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+        <div className="absolute top-3 left-3 right-3 sm:left-4 sm:right-4 flex items-center justify-between gap-2 text-[8px] sm:text-[9px] font-mono text-white bg-black/75 backdrop-blur-md px-2.5 sm:px-3 py-1 rounded border border-white/10 z-30 pointer-events-none">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse shrink-0" />
             <span>24 FPS // 180° SHUTTER</span>
           </div>
-          <div className="text-purple-300 font-bold">
-            {focalLength}MM CINE PRIME T/1.5 // {aspectRatio}:1
+          <div className="text-purple-300 font-bold truncate">
+            {focalLength}MM T/1.5 // {aspectRatio}:1
           </div>
         </div>
       </div>
 
       {/* Aspect Ratio Selector Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span className="font-mono text-[10px] uppercase text-zinc-400 font-bold mr-1">
             Aspect Ratio:
           </span>
@@ -883,7 +883,7 @@ function CineOpticsLab() {
       </div>
 
       {/* Focal Length Selector Wheel */}
-      <div className="bg-[#0d0f14] p-3 rounded-xl border border-white/10 flex items-center justify-between">
+      <div className="bg-[#0d0f14] p-3 rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-2">
         <div className="text-[11px] font-mono text-zinc-300">
           <span className="text-zinc-500 mr-2">FOCAL PRIME:</span>
           <span className="text-purple-400 font-bold">{focalLength}MM T/1.5</span>
@@ -1143,8 +1143,8 @@ export default function Skills() {
         </div>
 
         {/* ── 4. DECK BOTTOM STATUS BAR ── */}
-        <div className="mt-8 pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-zinc-500 gap-3">
-          <div className="flex items-center gap-4">
+        <div className="mt-8 pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-zinc-500 gap-3 text-center sm:text-left">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <span>ENGINE: GPU ACCELERATED</span>
             <span>COLOR SPACE: REC.709 D65</span>
             <span className="hidden sm:inline">RESOLUTION: 4K MASTER READY</span>

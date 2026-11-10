@@ -67,13 +67,13 @@ export default function Contact() {
   };
 
   return (
-    <section id="contact" className="relative py-28 sm:py-36 bg-[#07080a] text-white border-t border-white/[0.08]">
+    <section id="contact" className="relative py-20 sm:py-28 md:py-36 bg-[#07080a] text-white border-t border-white/[0.08]">
       {/* Background glowing red flare */}
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-red-600/10 blur-[160px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-6 sm:px-10">
+      <div className="max-w-7xl mx-auto px-5 sm:px-10">
         {/* Section Header with exact prompt copy */}
-        <div className="mb-20">
+        <div className="mb-12 sm:mb-20">
           <div className="flex items-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-[#e11d48]" />
             <span className="font-mono text-xs uppercase tracking-[0.3em] text-[#e11d48]">
@@ -81,7 +81,7 @@ export default function Contact() {
             </span>
           </div>
 
-          <h2 className="font-heading text-4xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase leading-none max-w-5xl">
+          <h2 className="font-heading text-3xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase leading-none max-w-5xl">
             LET&apos;S CREATE SOMETHING <span className="text-[#e11d48]">WORTH REMEMBERING.</span>
           </h2>
 
@@ -91,10 +91,10 @@ export default function Contact() {
         </div>
 
         {/* Contact Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 lg:gap-16 items-start">
           {/* Left Column: Direct Resume Contact Details (Col 1-5) */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-[#0e1015] border border-white/[0.08] p-8 space-y-8">
+            <div className="bg-[#0e1015] border border-white/[0.08] p-5 sm:p-8 space-y-6 sm:space-y-8">
               <div className="font-mono text-xs text-[#e11d48] tracking-widest uppercase">
                 Direct Channels // Preethish D P
               </div>
@@ -107,10 +107,10 @@ export default function Contact() {
                 <a
                   href="mailto:preethish94@gmail.com"
                   data-cursor-expand
-                  className="font-heading text-xl sm:text-2xl font-bold text-white group-hover:text-[#e11d48] transition-colors flex items-center gap-2"
+                  className="font-heading text-base sm:text-xl md:text-2xl font-bold text-white group-hover:text-[#e11d48] transition-colors flex items-center gap-2 min-w-0"
                 >
-                  <Mail className="w-5 h-5 text-[#e11d48]" />
-                  <span>preethish94@gmail.com</span>
+                  <Mail className="w-5 h-5 text-[#e11d48] shrink-0" />
+                  <span className="break-all">preethish94@gmail.com</span>
                 </a>
               </div>
 
@@ -122,9 +122,9 @@ export default function Contact() {
                 <a
                   href="tel:+916369687044"
                   data-cursor-expand
-                  className="font-heading text-xl font-bold text-white group-hover:text-[#e11d48] transition-colors flex items-center gap-2"
+                  className="font-heading text-lg sm:text-xl font-bold text-white group-hover:text-[#e11d48] transition-colors flex items-center gap-2"
                 >
-                  <Phone className="w-5 h-5 text-[#e11d48]" />
+                  <Phone className="w-5 h-5 text-[#e11d48] shrink-0" />
                   <span>+91 6369687044</span>
                 </a>
               </div>
@@ -139,13 +139,13 @@ export default function Contact() {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-cursor-expand
-                  className="font-heading text-lg font-bold text-white group-hover:text-[#e11d48] transition-colors flex items-center gap-2"
+                  className="font-heading text-sm sm:text-lg font-bold text-white group-hover:text-[#e11d48] transition-colors flex items-center gap-2 min-w-0"
                 >
-                  <svg className="w-5 h-5 text-[#e11d48] fill-current" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-[#e11d48] fill-current shrink-0" viewBox="0 0 24 24">
                     <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
                   </svg>
-                  <span>linkedin.com/in/preethishdp</span>
-                  <ArrowUpRight className="w-4 h-4 text-zinc-500" />
+                  <span className="truncate">linkedin.com/in/preethishdp</span>
+                  <ArrowUpRight className="w-4 h-4 text-zinc-500 shrink-0" />
                 </a>
               </div>
 
@@ -154,24 +154,24 @@ export default function Contact() {
                 <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-widest block mb-1">
                   Operating Base
                 </span>
-                <div className="font-heading text-lg font-bold text-white flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-[#e11d48]" />
+                <div className="font-heading text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-[#e11d48] shrink-0" />
                   <span>Chennai, Tamil Nadu, India</span>
                 </div>
               </div>
             </div>
 
             {/* Availability Box */}
-            <div className="p-6 border border-white/[0.08] bg-black/40 flex items-center gap-4">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="p-5 sm:p-6 border border-white/[0.08] bg-black/40 flex items-center gap-4">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0" />
               <div className="text-xs font-mono text-zinc-300">
-                STATUS: ACCEPTING CREATIVE BRIEFS & EMPLOYMENT INQUIRIES
+                STATUS: ACCEPTING CREATIVE BRIEFS &amp; EMPLOYMENT INQUIRIES
               </div>
             </div>
           </div>
 
           {/* Right Column: Accessible Contact Form (Col 6-12) */}
-          <div className="lg:col-span-7 bg-[#0e1015] border border-white/[0.08] p-8 sm:p-10 relative">
+          <div className="lg:col-span-7 bg-[#0e1015] border border-white/[0.08] p-5 sm:p-8 md:p-10 relative">
             <h3 className="font-heading text-2xl font-bold text-white mb-2">
               Send a Transmission
             </h3>
@@ -326,14 +326,14 @@ export default function Contact() {
         </div>
 
         {/* Footer info */}
-        <div className="mt-28 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500">
+        <div className="mt-16 sm:mt-28 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500 text-center sm:text-left">
           <div>
             © 2026 PREETHISH D P. ALL RIGHTS RESERVED.
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 sm:gap-6">
             <span>CHENNAI // INDIA</span>
-            <span>•</span>
-            <span>GRAPHIC DESIGN & DIGITAL MARKETING</span>
+            <span className="hidden sm:inline">•</span>
+            <span>GRAPHIC DESIGN &amp; DIGITAL MARKETING</span>
           </div>
         </div>
       </div>
