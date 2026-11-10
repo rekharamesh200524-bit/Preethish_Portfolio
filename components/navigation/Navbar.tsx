@@ -19,26 +19,44 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
+    let ticking = false;
+    let lastScrolled = false;
+    let lastSection = "hero";
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
+      if (ticking) return;
+      ticking = true;
 
-      const sections = ["hero", "about", "experience", "projects", "skills", "education", "contact"];
-      const scrollPos = window.scrollY + 200;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const scrolled = window.scrollY > 40;
+        if (scrolled !== lastScrolled) {
+          lastScrolled = scrolled;
+          setIsScrolled(scrolled);
+        }
 
-      for (const sectionId of sections) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          const top = el.offsetTop;
-          const height = el.offsetHeight;
-          if (scrollPos >= top && scrollPos < top + height) {
-            setActiveSection(sectionId);
-            break;
+        const sections = ["hero", "about", "experience", "projects", "skills", "tools", "education", "contact"];
+        const scrollPos = window.scrollY + 220;
+
+        for (const sectionId of sections) {
+          const el = document.getElementById(sectionId);
+          if (el) {
+            const top = el.offsetTop;
+            const height = el.offsetHeight;
+            if (scrollPos >= top && scrollPos < top + height) {
+              if (sectionId !== lastSection) {
+                lastSection = sectionId;
+                setActiveSection(sectionId);
+              }
+              break;
+            }
           }
         }
-      }
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 

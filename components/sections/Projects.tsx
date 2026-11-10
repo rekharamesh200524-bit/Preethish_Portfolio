@@ -168,7 +168,7 @@ export default function Projects() {
               <div className="p-8">
                 <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-2">
                   <span>{project.organization}</span>
-                  <span className="text-zinc-600">// 0{idx + 1}</span>
+                  <span className="text-zinc-600">{"//"} 0{idx + 1}</span>
                 </div>
 
                 <h3 className="font-heading text-2xl font-bold text-white group-hover:text-white transition-colors mb-3 flex items-center justify-between gap-4">
@@ -216,7 +216,7 @@ export default function Projects() {
             </button>
 
             <div className="font-mono text-xs text-[#e11d48] tracking-widest uppercase mb-2">
-              {activeProject.category} // {activeProject.organization}
+              {activeProject.category} {"//"} {activeProject.organization}
             </div>
 
             <h3 className="font-heading text-3xl sm:text-4xl font-black text-white mb-6">

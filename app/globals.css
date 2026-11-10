@@ -69,13 +69,12 @@ body {
   color: #ffffff;
 }
 
-/* Cinematic film grain overlay */
+/* Cinematic film grain overlay - hardware accelerated without expensive mix-blend compositor stall */
 .film-grain {
   background-image: url('/images/grain.png');
   background-repeat: repeat;
   pointer-events: none;
-  opacity: 0.28;
-  mix-blend-mode: overlay;
+  opacity: 0.04;
 }
 
 /* 3D and Perspective utilities */
@@ -129,3 +128,17 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+@keyframes toolsDolly {
+  0%, 100% {
+    transform: scale(1.01);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+.animate-tools-dolly {
+  animation: toolsDolly 10s ease-in-out infinite;
+}
+

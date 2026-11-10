@@ -203,6 +203,10 @@ const EXPERIENCES: ExperienceItem[] = [
   },
 ];
 
+// Round trig coordinates so SSR (Node/V8) and client browsers (e.g. Firefox/SpiderMonkey)
+// serialize identical SVG attribute values without 1-ULP floating-point hydration mismatches.
+const roundCoord = (n: number) => Number(n.toFixed(2));
+
 export default function Experience() {
   const containerRef = useRef<HTMLDivElement>(null);
   const upperPathRef = useRef<SVGPathElement>(null);
@@ -246,18 +250,18 @@ export default function Experience() {
       const r2 = rOuter;
 
       ticks.push({
-        x1: cx + sin * r1,
-        y1: cy + cos * r1,
-        x2: cx + sin * r2,
-        y2: cy + cos * r2,
+        x1: roundCoord(cx + sin * r1),
+        y1: roundCoord(cy + cos * r1),
+        x2: roundCoord(cx + sin * r2),
+        y2: roundCoord(cy + cos * r2),
         isMajor,
         isMid,
         deg,
       });
 
       if (isMajor && deg >= -75 && deg <= 75) {
-        const lx = cx + sin * (rOuter + 14);
-        const ly = cy + cos * (rOuter + 14);
+        const lx = roundCoord(cx + sin * (rOuter + 14));
+        const ly = roundCoord(cy + cos * (rOuter + 14));
         const val = Math.abs(Math.round(deg));
         labels.push({ x: lx, y: ly, text: `${val.toString().padStart(2, "0")}°` });
       }
@@ -280,10 +284,10 @@ export default function Experience() {
 
     // Left fixed reference hand at -34 deg
     const leftArmAngleRad = (-34 * Math.PI) / 180;
-    const leftArmX = cx + Math.sin(leftArmAngleRad) * rOuter;
-    const leftArmY = cy + Math.cos(leftArmAngleRad) * rOuter;
-    const diamondX = cx + 0.62 * (leftArmX - cx);
-    const diamondY = cy + 0.62 * (leftArmY - cy);
+    const leftArmX = roundCoord(cx + Math.sin(leftArmAngleRad) * rOuter);
+    const leftArmY = roundCoord(cy + Math.cos(leftArmAngleRad) * rOuter);
+    const diamondX = roundCoord(cx + 0.62 * (leftArmX - cx));
+    const diamondY = roundCoord(cy + 0.62 * (leftArmY - cy));
 
     return {
       cx,
@@ -313,40 +317,63 @@ export default function Experience() {
     const rad = (currentAngleDeg * Math.PI) / 180;
 
     return {
-      x: clockData.cx + Math.sin(rad) * clockData.rOuter,
-      y: clockData.cy + Math.cos(rad) * clockData.rOuter,
+      x: roundCoord(clockData.cx + Math.sin(rad) * clockData.rOuter),
+      y: roundCoord(clockData.cy + Math.cos(rad) * clockData.rOuter),
       angleDeg: currentAngleDeg,
     };
   }, [scrollProgress, clockData]);
 
-  // Pinned scroll listener
+  // Cached path length to avoid synchronous DOM layout recalculation on every scroll
+  const pathLengthRef = useRef<number | null>(null);
+  const lastProgressRef = useRef(-1);
+  const lastIndexRef = useRef(-1);
+
+  // Pinned scroll listener with rAF throttle & viewport bounding check
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const container = containerRef.current;
-      if (!container) return;
+      if (ticking) return;
+      ticking = true;
 
-      const rect = container.getBoundingClientRect();
-      const scrollableDistance = rect.height - window.innerHeight;
-      if (scrollableDistance <= 0) return;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const container = containerRef.current;
+        if (!container) return;
 
-      // Progress from 0 to 1
-      const progress = Math.max(0, Math.min(1, -rect.top / scrollableDistance));
-      setScrollProgress(progress);
+        const rect = container.getBoundingClientRect();
+        // Skip computations and re-renders if section is completely outside the viewport
+        if (rect.bottom < -60 || rect.top > window.innerHeight + 60) return;
 
-      // Determine active index
-      const count = EXPERIENCES.length;
-      const idx = Math.min(count - 1, Math.floor(progress * count));
-      setActiveIndex(idx);
+        const scrollableDistance = rect.height - window.innerHeight;
+        if (scrollableDistance <= 0) return;
 
-      // Track light position on curve
-      if (upperPathRef.current) {
-        const len = upperPathRef.current.getTotalLength();
-        const pt = upperPathRef.current.getPointAtLength(progress * len);
-        setActiveCoords({ x: pt.x, y: pt.y });
-      } else {
-        const exp = EXPERIENCES[idx];
-        setActiveCoords({ x: exp.nodeX, y: exp.nodeY });
-      }
+        // Progress from 0 to 1
+        const progress = Math.max(0, Math.min(1, -rect.top / scrollableDistance));
+        if (Math.abs(progress - lastProgressRef.current) < 0.002) return;
+        lastProgressRef.current = progress;
+        setScrollProgress(progress);
+
+        // Determine active index
+        const count = EXPERIENCES.length;
+        const idx = Math.min(count - 1, Math.floor(progress * count));
+        if (idx !== lastIndexRef.current) {
+          lastIndexRef.current = idx;
+          setActiveIndex(idx);
+        }
+
+        // Track light position on curve without expensive repeated DOM reflows
+        if (upperPathRef.current) {
+          if (pathLengthRef.current === null) {
+            pathLengthRef.current = upperPathRef.current.getTotalLength();
+          }
+          const pt = upperPathRef.current.getPointAtLength(progress * pathLengthRef.current);
+          setActiveCoords({ x: pt.x, y: pt.y });
+        } else {
+          const exp = EXPERIENCES[idx];
+          setActiveCoords({ x: exp.nodeX, y: exp.nodeY });
+        }
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -384,7 +411,7 @@ export default function Experience() {
       {/* ════════════════════════════════════════════════════════════════
           DESKTOP & TABLET: THE CINEMATIC "JOURNEY THROUGH TIME" (md+)
       ════════════════════════════════════════════════════════════════ */}
-      <div className="hidden md:block relative" style={{ height: "420vh" }}>
+      <div className="hidden md:block relative" style={{ height: "240vh" }}>
         {/* Sticky 100vh Full Viewport Stage */}
         <div className="sticky top-0 w-full h-screen overflow-hidden bg-[#050608] flex flex-col justify-between p-6 lg:p-10 select-none">
           
@@ -454,12 +481,10 @@ export default function Experience() {
                   <stop offset="100%" stopColor="#fef08a" stopOpacity="1" />
                 </linearGradient>
 
-                {/* Intense Golden Glow */}
-                <filter id="goldGlowFilter" x="-40%" y="-40%" width="180%" height="180%">
-                  <feGaussianBlur stdDeviation="5" result="blur1" />
-                  <feGaussianBlur stdDeviation="12" result="blur2" />
+                {/* Optimized Hardware-Accelerated Golden Glow */}
+                <filter id="goldGlowFilter" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3.5" result="blur1" />
                   <feMerge>
-                    <feMergeNode in="blur2" />
                     <feMergeNode in="blur1" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
@@ -975,7 +1000,7 @@ export default function Experience() {
               <div className="absolute bottom-4 left-6 right-6 z-10">
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="px-2 py-0.5 bg-amber-500 text-black font-mono text-[9px] uppercase font-black tracking-wider rounded-[1px]">
-                    {selectedExp.yearDisplay} // {selectedExp.category}
+                    {selectedExp.yearDisplay} {"//"} {selectedExp.category}
                   </span>
                   {selectedExp.isCurrent && (
                     <span className="px-2 py-0.5 bg-[#e11d48] text-white font-mono text-[9px] uppercase font-bold tracking-widest rounded-[1px]">

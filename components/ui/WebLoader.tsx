@@ -6,10 +6,10 @@ interface WebLoaderProps {
   onComplete?: () => void;
 }
 
-const TOTAL_PRELOAD_FRAMES = 50;
+const TOTAL_PRELOAD_FRAMES = 16;
 const SPOKE_COUNT = 16;
 const MAX_RINGS = 18;
-const MIN_DURATION = 2400; // minimum duration (ms) for the web to weave to screen edges
+const MIN_DURATION = 800; // Fast 800ms cinematic entrance
 
 export default function WebLoader({ onComplete }: WebLoaderProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -20,6 +20,10 @@ export default function WebLoader({ onComplete }: WebLoaderProps) {
   const progressRef = useRef(0);
   const loadedCountRef = useRef(0);
   const startTimeRef = useRef(0);
+  const isExitingRef = useRef(false);
+  const isFinishedRef = useRef(false);
+  const lastProgressValRef = useRef(-1);
+  const lastProgressUpdateRef = useRef(0);
 
   // Preload critical initial video frames and alter-ego assets
   useEffect(() => {
@@ -99,18 +103,25 @@ export default function WebLoader({ onComplete }: WebLoaderProps) {
 
       // Progress is smoothly bound by both time (so web expansion looks cinematic) and asset loading
       const targetPercent = Math.min(100, Math.floor((timeRatio * 0.7 + assetsRatio * 0.3) * 100));
-      progressRef.current += (targetPercent - progressRef.current) * 0.12;
+      progressRef.current += (targetPercent - progressRef.current) * 0.22;
 
       const currentP = progressRef.current / 100;
-      setProgress(Math.round(progressRef.current));
+      const roundedP = Math.round(progressRef.current);
+      if (roundedP !== lastProgressValRef.current && (time - lastProgressUpdateRef.current > 40 || roundedP >= 100)) {
+        lastProgressValRef.current = roundedP;
+        lastProgressUpdateRef.current = time;
+        setProgress(roundedP);
+      }
 
       // Check if finished
-      if (progressRef.current >= 99 && elapsed >= MIN_DURATION && !isExiting) {
+      if (progressRef.current >= 98 && elapsed >= MIN_DURATION && !isExitingRef.current) {
+        isExitingRef.current = true;
         setIsExiting(true);
         setTimeout(() => {
+          isFinishedRef.current = true;
           setIsFinished(true);
           onComplete?.();
-        }, 650);
+        }, 400);
       }
 
       const cw = canvas.width;
@@ -268,7 +279,7 @@ export default function WebLoader({ onComplete }: WebLoaderProps) {
       ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
       ctx.fill();
 
-      if (!isFinished) {
+      if (!isFinishedRef.current) {
         rafId = requestAnimationFrame(render);
       }
     };
@@ -279,7 +290,7 @@ export default function WebLoader({ onComplete }: WebLoaderProps) {
       window.removeEventListener("resize", handleResize);
       cancelAnimationFrame(rafId);
     };
-  }, [isExiting, isFinished, onComplete]);
+  }, [onComplete]);
 
   if (isFinished) return null;
 

@@ -77,8 +77,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} dark`}>
-      <body className="bg-[#07080a] text-[#f3f4f6] font-body selection:bg-[#e11d48] selection:text-white antialiased overflow-x-clip min-h-screen">
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} dark`} suppressHydrationWarning>
+      <body className="bg-[#07080a] text-[#f3f4f6] font-body selection:bg-[#e11d48] selection:text-white antialiased overflow-x-clip min-h-screen" suppressHydrationWarning>
         {/* Subtle persistent film grain overlay */}
         <div className="film-grain fixed inset-0 z-50 pointer-events-none" aria-hidden="true" />
         {children}

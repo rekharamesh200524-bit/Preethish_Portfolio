@@ -15,21 +15,33 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
 
   // Active sequence mode: "hero" (Camera crane dolly) or "raising" (Silhouette head raise)
   const [activeSequence, setActiveSequence] = useState<"hero" | "raising">(initialSequence);
-  const [framesLoadedCount, setFramesLoadedCount] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [hudCoords, setHudCoords] = useState({ x: 0, y: 0 });
   const [isAlterEgoActive, setIsAlterEgoActive] = useState(false);
   const [alterEgoChar, setAlterEgoChar] = useState<"batman" | "noir">("batman");
   const [isFaceVisible, setIsFaceVisible] = useState(false);
+
+  // Performance refs — zero React re-render overhead on high-frequency loops
+  const stageRef = useRef<HTMLDivElement>(null);
+  const frameNumRef = useRef<HTMLSpanElement>(null);
+  const lastDrawnFrameRef = useRef(-1);
+  const needsRedrawRef = useRef(true);
+  const isHeroVisibleRef = useRef(true);
+  const isRafRunningRef = useRef(false);
+  const isAlterEgoActiveRef = useRef(false);
+  const lastFrameNumRef = useRef(-1);
+  const currentFrameIndexRef = useRef(0);
+  const triggerRedrawRef = useRef<() => void>(() => {});
 
   // References to keep 60/120fps physics loop out of React state
   const imagesRef = useRef<Map<string, HTMLImageElement[]>>(new Map());
   const batmanImgRef = useRef<HTMLImageElement | null>(null);
   const noirImgRef = useRef<HTMLImageElement | null>(null);
   const alterEgoCharRef = useRef<"batman" | "noir">("batman");
-  alterEgoCharRef.current = alterEgoChar;
   const isFaceVisibleRef = useRef(false);
+
+  useEffect(() => {
+    alterEgoCharRef.current = alterEgoChar;
+  }, [alterEgoChar]);
 
   const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const batmanCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -51,35 +63,69 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
   const mouseTargetRef = useRef({ x: 0, y: 0 });
   const mouseCurrentRef = useRef({ x: 0, y: 0 });
   const activeSeqRef = useRef<"hero" | "raising">(initialSequence);
-  activeSeqRef.current = activeSequence;
 
-  // Preload frames for a given sequence
-  const preloadSequence = useCallback((seq: "hero" | "raising") => {
+  useEffect(() => {
+    activeSeqRef.current = activeSequence;
+  }, [activeSequence]);
+
+  // Preload frames progressively for hero sequence without triggering 192 React re-renders
+  const preloadSequence = useCallback((seq: "hero" | "raising" = "hero") => {
     if (imagesRef.current.has(seq)) return;
 
-    const frameList: HTMLImageElement[] = [];
+    const frameList: HTMLImageElement[] = new Array(TOTAL_FRAMES);
     let loaded = 0;
 
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
+    const loadFrame = (i: number) => {
       const img = new Image();
       const paddedIndex = String(i).padStart(3, "0");
       img.src = `/frames/${seq}/frame_${paddedIndex}.jpg`;
-
       img.onload = () => {
         loaded++;
-        if (seq === activeSeqRef.current) {
-          setFramesLoadedCount(loaded);
+        needsRedrawRef.current = true;
+        // Immediate trigger if this is the target initial frame or current frame
+        if (i === 0 || i === currentFrameIndexRef.current) {
+          triggerRedrawRef.current();
         }
       };
-      frameList.push(img);
+      frameList[i] = img;
+    };
+
+    // Phase 1: Immediately load first 24 frames for instant initial render
+    const INITIAL_BURST = 24;
+    for (let i = 0; i < Math.min(INITIAL_BURST, TOTAL_FRAMES); i++) {
+      loadFrame(i);
     }
     imagesRef.current.set(seq, frameList);
+
+    // Phase 2: Load remaining frames in background idle batches to keep scroll & network responsive
+    let nextIndex = INITIAL_BURST;
+    const BATCH_SIZE = 16;
+    const queueNextBatch = () => {
+      if (nextIndex >= TOTAL_FRAMES) return;
+      const limit = Math.min(nextIndex + BATCH_SIZE, TOTAL_FRAMES);
+      for (let i = nextIndex; i < limit; i++) {
+        loadFrame(i);
+      }
+      nextIndex = limit;
+      if (nextIndex < TOTAL_FRAMES) {
+        if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+          (window as unknown as { requestIdleCallback: (fn: () => void, opts: { timeout: number }) => void }).requestIdleCallback(queueNextBatch, { timeout: 120 });
+        } else {
+          setTimeout(queueNextBatch, 40);
+        }
+      }
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      (window as unknown as { requestIdleCallback: (fn: () => void, opts: { timeout: number }) => void }).requestIdleCallback(queueNextBatch, { timeout: 150 });
+    } else {
+      setTimeout(queueNextBatch, 50);
+    }
   }, []);
 
-  // Preload initial sequences, Batman & Spider-Man Noir alter-ego costumes
+  // Preload initial hero sequence, Batman & Spider-Man Noir alter-ego costumes
   useEffect(() => {
     preloadSequence("hero");
-    preloadSequence("raising");
 
     const bImg = new Image();
     bImg.src = "/images/batman_alter_ego.jpg";
@@ -104,145 +150,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
-    let rafId: number;
-    let lastHudTime = 0;
-
-    // Handle high-DPI canvas resizing
-    const updateCanvasSize = () => {
-      if (!canvas) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-
-      if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
-        canvas.width = Math.floor(w * dpr);
-        canvas.height = Math.floor(h * dpr);
-      }
-    };
-
-    updateCanvasSize();
-    window.addEventListener("resize", updateCanvasSize, { passive: true });
-
-    // Scroll listener calculates normalized progress through sticky hero & tracks journey
-    const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const scrollableDist = rect.height - window.innerHeight;
-      if (scrollableDist <= 0) return;
-
-      const progress = Math.max(0, Math.min(1, -rect.top / scrollableDist));
-      targetProgressRef.current = progress;
-
-      const currentScrollY = window.scrollY;
-      const isScrollingUp = currentScrollY < lastScrollYRef.current - 4;
-      const isScrollingDown = currentScrollY > lastScrollYRef.current + 4;
-      lastScrollYRef.current = currentScrollY;
-
-      // When the user scrolls down into the portfolio sections below hero
-      if (currentScrollY > scrollableDist * 0.7) {
-        hasVisitedPortfolioRef.current = true;
-      }
-
-      // Journey 2: If user visited portfolio and is now scrolling back UP into hero:
-      // Switch reveal character to Spider-Man Noir!
-      if (hasVisitedPortfolioRef.current && isScrollingUp && currentScrollY < scrollableDist * 0.95) {
-        if (alterEgoCharRef.current !== "noir") {
-          alterEgoCharRef.current = "noir";
-          setAlterEgoChar("noir");
-        }
-      }
-
-      // Journey 1: If user is at top of hero and scrolls downwards:
-      // Reset back to Batman!
-      if (currentScrollY < 150 && isScrollingDown) {
-        hasVisitedPortfolioRef.current = false;
-        if (alterEgoCharRef.current !== "batman") {
-          alterEgoCharRef.current = "batman";
-          setAlterEgoChar("batman");
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    // Track cursor movement and interpolate zigzag brush strokes for Batman/Noir alter-ego reveal
-    const addRevealPoint = (clientX: number, clientY: number) => {
-      // Logical requirement: Only reveal alter-ego once the man's head is lifted and his face is visible on screen
-      if (!isFaceVisibleRef.current) return;
-
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = ((clientX - rect.left) / rect.width) * canvas.width;
-      const y = ((clientY - rect.top) / rect.height) * canvas.height;
-
-      // Soft brush radius (~80-120px in canvas space)
-      const radius = Math.max(75, Math.min(125, canvas.width * 0.075));
-
-      if (lastMousePosRef.current) {
-        const dx = x - lastMousePosRef.current.x;
-        const dy = y - lastMousePosRef.current.y;
-        const dist = Math.hypot(dx, dy);
-        const steps = Math.min(8, Math.floor(dist / (radius * 0.4)));
-        for (let i = 1; i <= steps; i++) {
-          const t = i / (steps + 1);
-          revealPointsRef.current.push({
-            x: lastMousePosRef.current.x + dx * t,
-            y: lastMousePosRef.current.y + dy * t,
-            radius,
-            life: 1.0,
-          });
-        }
-      }
-
-      revealPointsRef.current.push({ x, y, radius, life: 1.0 });
-      lastMousePosRef.current = { x, y };
-
-      if (revealPointsRef.current.length > 220) {
-        revealPointsRef.current = revealPointsRef.current.slice(-220);
-      }
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      lastHoverTimeRef.current = performance.now();
-      const { innerWidth, innerHeight } = window;
-      mouseTargetRef.current = {
-        x: (e.clientX / innerWidth) * 2 - 1,
-        y: (e.clientY / innerHeight) * 2 - 1,
-      };
-      addRevealPoint(e.clientX, e.clientY);
-    };
-
-    const handleMouseLeave = () => {
-      lastMousePosRef.current = null;
-      // Instantly clear alter-ego reveal when cursor leaves so nothing lingers after hover
-      revealPointsRef.current = [];
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        lastHoverTimeRef.current = performance.now();
-        const t = e.touches[0];
-        const { innerWidth, innerHeight } = window;
-        mouseTargetRef.current = {
-          x: ((t.clientX / innerWidth) * 2 - 1) * 0.3,
-          y: ((t.clientY / innerHeight) * 2 - 1) * 0.3,
-        };
-        addRevealPoint(t.clientX, t.clientY);
-      }
-    };
-
-    const handleTouchEnd = () => {
-      lastMousePosRef.current = null;
-      // Instantly clear alter-ego reveal when touch ends
-      revealPointsRef.current = [];
-    };
-
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: true });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    let rafId = 0;
 
     // Helper: draw image with object-cover aspect fit, shifted to the right on desktop, with headroom below the nav
     const drawCover = (img: HTMLImageElement) => {
@@ -280,7 +188,6 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
 
     // Helper: Composite Batman or Spider-Man Noir Alter-Ego Costume through the hover zigzag brush mask
     const drawAlterEgoReveal = () => {
-      // Must not draw alter-ego if the man's head is bowed down
       if (!isFaceVisibleRef.current) return;
 
       const activeChar = alterEgoCharRef.current;
@@ -339,86 +246,117 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
       ctx.drawImage(alterEgoCanvas, 0, 0);
     };
 
-    // 60/120fps Animation Loop with Spring Lerp
-    const tick = (timestamp: number) => {
-      // Calculate scroll progress directly in animation frame for continuous sub-pixel accuracy with Lenis
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const scrollableDist = rect.height - window.innerHeight;
-        if (scrollableDist > 0) {
-          targetProgressRef.current = Math.max(0, Math.min(1, -rect.top / scrollableDist));
-        }
+    // 60/120fps Animation Loop with Spring Lerp & Hardware Accelerated CSS Variables
+    // Declared before startTick/updateCanvasSize/handleScroll so initial setup never hits TDZ.
+    const tick = () => {
+      const isAtTop = window.scrollY < (containerRef.current?.offsetHeight || 1200);
+      if (!isHeroVisibleRef.current && !isAtTop) {
+        isRafRunningRef.current = false;
+        return;
       }
+      isHeroVisibleRef.current = true;
 
       // Smooth progress lerp
-      currentProgressRef.current += (targetProgressRef.current - currentProgressRef.current) * 0.16;
+      const pDiff = targetProgressRef.current - currentProgressRef.current;
+      currentProgressRef.current += pDiff * 0.16;
       const progress = currentProgressRef.current;
 
       // Smooth mouse lerp
-      mouseCurrentRef.current.x += (mouseTargetRef.current.x - mouseCurrentRef.current.x) * 0.08;
-      mouseCurrentRef.current.y += (mouseTargetRef.current.y - mouseCurrentRef.current.y) * 0.08;
+      const mDiffX = mouseTargetRef.current.x - mouseCurrentRef.current.x;
+      const mDiffY = mouseTargetRef.current.y - mouseCurrentRef.current.y;
+      mouseCurrentRef.current.x += mDiffX * 0.08;
+      mouseCurrentRef.current.y += mDiffY * 0.08;
 
-      // Determine target frame index
-      const targetFrame = Math.min(
-        TOTAL_FRAMES - 1,
-        Math.max(0, Math.floor(progress * (TOTAL_FRAMES - 1)))
-      );
+      // Update CSS variables for 3D parallax on the stage container directly
+      if (stageRef.current) {
+        stageRef.current.style.setProperty("--hud-x", mouseCurrentRef.current.x.toFixed(3));
+        stageRef.current.style.setProperty("--hud-y", mouseCurrentRef.current.y.toFixed(3));
+      }
 
-      // Logical requirement: Face is only shown once the man raises his head (frame >= 58)
-      // When frame < 58, the man is looking down with only hair visible, so alter-ego hover is gated
-      const faceShown = targetFrame >= 58;
+      // Smooth dynamic pacing: Eager head-raise in first 16% of scroll travel
+      // so the face makes immediate eye contact right away when user scrolls!
+      let targetFrame: number;
+      const HEAD_UP_FRAME = 58;
+      const FIRST_PHASE_SCROLL = 0.16; // Head raise completes in first 16% of hero scroll
+
+      if (progress <= FIRST_PHASE_SCROLL) {
+        const t = progress / FIRST_PHASE_SCROLL;
+        const easedT = Math.sin((t * Math.PI) / 2); // Ease-out curve
+        targetFrame = Math.round(easedT * HEAD_UP_FRAME);
+      } else {
+        const t = (progress - FIRST_PHASE_SCROLL) / (1 - FIRST_PHASE_SCROLL);
+        targetFrame = Math.min(
+          TOTAL_FRAMES - 1,
+          HEAD_UP_FRAME + Math.round(t * (TOTAL_FRAMES - 1 - HEAD_UP_FRAME))
+        );
+      }
+      currentFrameIndexRef.current = targetFrame;
+
+      // Update frame number text directly on DOM ref without React re-render
+      if (frameNumRef.current && lastFrameNumRef.current !== targetFrame + 1) {
+        lastFrameNumRef.current = targetFrame + 1;
+        frameNumRef.current.textContent = `FRM: ${String(targetFrame + 1).padStart(3, "0")}/${TOTAL_FRAMES}`;
+      }
+
+      // Logical requirement: Face is shown as soon as the head lifts up (frame >= 40)
+      const faceShown = targetFrame >= 40;
       isFaceVisibleRef.current = faceShown;
 
+      // Toggle alter ego active alert only when value actually changes
+      const points = revealPointsRef.current;
+      const shouldAlterEgoBeActive = faceShown && points.length > 6;
+      if (shouldAlterEgoBeActive !== isAlterEgoActiveRef.current) {
+        isAlterEgoActiveRef.current = shouldAlterEgoBeActive;
+        setIsAlterEgoActive(shouldAlterEgoBeActive);
+      }
+
       // If user scrolls back up where head is bowed down, instantly wipe any alter-ego points
-      if (!faceShown && revealPointsRef.current.length > 0) {
+      if (!faceShown && points.length > 0) {
         revealPointsRef.current = [];
       }
 
-      // Update React state at 15Hz to keep UI in sync without performance penalty
-      if (timestamp - lastHudTime > 66) {
-        setScrollProgress(progress);
-        setIsAlterEgoActive(faceShown && revealPointsRef.current.length > 6);
-        setIsFaceVisible(faceShown);
-        setHudCoords({
-          x: Math.round(mouseCurrentRef.current.x * 100) / 100,
-          y: Math.round(mouseCurrentRef.current.y * 100) / 100,
-        });
-        lastHudTime = timestamp;
+      // Smart canvas redraw: only redraw when frame changed, brush active, or flag set
+      const needsDraw =
+        lastDrawnFrameRef.current !== targetFrame ||
+        points.length > 0 ||
+        needsRedrawRef.current;
+
+      if (needsDraw) {
+        const seqList = imagesRef.current.get(activeSeqRef.current);
+        if (seqList && seqList.length > 0) {
+          let frameImg = seqList[targetFrame];
+
+          // If target frame not loaded yet, find nearest loaded frame
+          if (!frameImg || !frameImg.complete || frameImg.naturalWidth === 0) {
+            for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
+              const before = seqList[targetFrame - offset];
+              if (before && before.complete && before.naturalWidth > 0) {
+                frameImg = before;
+                break;
+              }
+              const after = seqList[targetFrame + offset];
+              if (after && after.complete && after.naturalWidth > 0) {
+                frameImg = after;
+                break;
+              }
+            }
+          }
+
+          if (frameImg && frameImg.complete && frameImg.naturalWidth > 0) {
+            drawCover(frameImg);
+            if (faceShown) {
+              drawAlterEgoReveal();
+            }
+            lastDrawnFrameRef.current = targetFrame;
+            needsRedrawRef.current = false;
+          }
+        }
       }
 
-      const seqList = imagesRef.current.get(activeSeqRef.current);
-      if (seqList && seqList.length > 0) {
-        let frameImg = seqList[targetFrame];
-
-        // If target frame not loaded yet, find nearest loaded frame
-        if (!frameImg || !frameImg.complete || frameImg.naturalWidth === 0) {
-          for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
-            const before = seqList[targetFrame - offset];
-            if (before && before.complete && before.naturalWidth > 0) {
-              frameImg = before;
-              break;
-            }
-            const after = seqList[targetFrame + offset];
-            if (after && after.complete && after.naturalWidth > 0) {
-              frameImg = after;
-              break;
-            }
-          }
-        }
-
-        if (frameImg && frameImg.complete && frameImg.naturalWidth > 0) {
-          drawCover(frameImg);
-          if (faceShown) {
-            drawAlterEgoReveal();
-          }
-        }
-
-        // Rapid fade: reveal only shows at the second of hover, and vanishes immediately after hover
-        const points = revealPointsRef.current;
+      // Rapid fade: reveal only shows at the second of hover, and vanishes immediately after hover
+      if (points.length > 0) {
         const timeSinceMove = performance.now() - lastHoverTimeRef.current;
-        // If cursor stopped moving for over 120ms, drop out instantly; while moving, decay in ~0.5s
         const decayRate = timeSinceMove > 120 ? 0.14 : 0.045;
-
         for (let i = points.length - 1; i >= 0; i--) {
           points[i].life -= decayRate;
           if (points[i].life <= 0) {
@@ -427,10 +365,247 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         }
       }
 
+      // Idle sleep check: sleep loop when progress settled, mouse settled, and no brush points remain
+      const isProgressSettled = Math.abs(pDiff) < 0.0005;
+      const isMouseSettled = Math.abs(mDiffX) < 0.001 && Math.abs(mDiffY) < 0.001;
+      const isRedrawSettled = !needsRedrawRef.current && lastDrawnFrameRef.current === targetFrame;
+
+      if (isProgressSettled && isMouseSettled && points.length === 0 && isRedrawSettled) {
+        isRafRunningRef.current = false;
+        return;
+      }
+
       rafId = requestAnimationFrame(tick);
     };
 
-    rafId = requestAnimationFrame(tick);
+    const startTick = () => {
+      if (window.scrollY < (containerRef.current?.offsetHeight || 1200)) {
+        isHeroVisibleRef.current = true;
+      }
+      if (isRafRunningRef.current || !isHeroVisibleRef.current) return;
+      isRafRunningRef.current = true;
+      rafId = requestAnimationFrame(tick);
+    };
+
+    // Immediate direct synchronous frame draw
+    const renderDirect = () => {
+      const seqList = imagesRef.current.get(activeSeqRef.current);
+      if (!seqList || seqList.length === 0) return;
+
+      const targetFrame = currentFrameIndexRef.current;
+      let frameImg = seqList[targetFrame];
+
+      // If target frame not loaded yet, find nearest loaded frame
+      if (!frameImg || !frameImg.complete || frameImg.naturalWidth === 0) {
+        for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
+          const before = seqList[targetFrame - offset];
+          if (before && before.complete && before.naturalWidth > 0) {
+            frameImg = before;
+            break;
+          }
+          const after = seqList[targetFrame + offset];
+          if (after && after.complete && after.naturalWidth > 0) {
+            frameImg = after;
+            break;
+          }
+        }
+      }
+
+      if (frameImg && frameImg.complete && frameImg.naturalWidth > 0) {
+        drawCover(frameImg);
+        const faceShown = targetFrame >= 40;
+        if (faceShown) {
+          drawAlterEgoReveal();
+        }
+        lastDrawnFrameRef.current = targetFrame;
+        needsRedrawRef.current = false;
+      }
+    };
+
+    const triggerRedraw = () => {
+      needsRedrawRef.current = true;
+      if (window.scrollY < (containerRef.current?.offsetHeight || 1200)) {
+        isHeroVisibleRef.current = true;
+      }
+      renderDirect();
+      startTick();
+    };
+
+    triggerRedrawRef.current = triggerRedraw;
+
+    // Handle high-DPI canvas resizing
+    const updateCanvasSize = () => {
+      if (!canvas) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      const targetW = Math.floor(w * dpr);
+      const targetH = Math.floor(h * dpr);
+
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+        lastDrawnFrameRef.current = -1;
+        needsRedrawRef.current = true;
+        triggerRedraw();
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener("resize", updateCanvasSize, { passive: true });
+
+    // Scroll listener calculates normalized progress through sticky hero & tracks journey
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const scrollableDist = rect.height - window.innerHeight;
+      if (scrollableDist <= 0) return;
+
+      const progress = Math.max(0, Math.min(1, -rect.top / scrollableDist));
+      targetProgressRef.current = progress;
+      needsRedrawRef.current = true;
+      startTick();
+
+      const currentScrollY = window.scrollY;
+      const isScrollingUp = currentScrollY < lastScrollYRef.current - 4;
+      const isScrollingDown = currentScrollY > lastScrollYRef.current + 4;
+      lastScrollYRef.current = currentScrollY;
+
+      // When the user scrolls down into the portfolio sections below hero
+      if (currentScrollY > scrollableDist * 0.7) {
+        hasVisitedPortfolioRef.current = true;
+      }
+
+      // Journey 2: If user visited portfolio and is now scrolling back UP into hero:
+      // Switch reveal character to Spider-Man Noir!
+      if (hasVisitedPortfolioRef.current && isScrollingUp && currentScrollY < scrollableDist * 0.95) {
+        if (alterEgoCharRef.current !== "noir") {
+          alterEgoCharRef.current = "noir";
+          setAlterEgoChar("noir");
+        }
+      }
+
+      // Journey 1: If user is at top of hero and scrolls downwards:
+      // Reset back to Batman!
+      if (currentScrollY < 150 && isScrollingDown) {
+        hasVisitedPortfolioRef.current = false;
+        if (alterEgoCharRef.current !== "batman") {
+          alterEgoCharRef.current = "batman";
+          setAlterEgoChar("batman");
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    // Track cursor movement and interpolate zigzag brush strokes for Batman/Noir alter-ego reveal
+    const addRevealPoint = (clientX: number, clientY: number) => {
+      if (!isFaceVisibleRef.current) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * canvas.width;
+      const y = ((clientY - rect.top) / rect.height) * canvas.height;
+
+      // Soft brush radius (~80-120px in canvas space)
+      const radius = Math.max(75, Math.min(125, canvas.width * 0.075));
+
+      if (lastMousePosRef.current) {
+        const dx = x - lastMousePosRef.current.x;
+        const dy = y - lastMousePosRef.current.y;
+        const dist = Math.hypot(dx, dy);
+        const steps = Math.min(8, Math.floor(dist / (radius * 0.4)));
+        for (let i = 1; i <= steps; i++) {
+          const t = i / (steps + 1);
+          revealPointsRef.current.push({
+            x: lastMousePosRef.current.x + dx * t,
+            y: lastMousePosRef.current.y + dy * t,
+            radius,
+            life: 1.0,
+          });
+        }
+      }
+
+      revealPointsRef.current.push({ x, y, radius, life: 1.0 });
+      lastMousePosRef.current = { x, y };
+
+      if (revealPointsRef.current.length > 220) {
+        revealPointsRef.current = revealPointsRef.current.slice(-220);
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      lastHoverTimeRef.current = performance.now();
+      const { innerWidth, innerHeight } = window;
+      mouseTargetRef.current = {
+        x: (e.clientX / innerWidth) * 2 - 1,
+        y: (e.clientY / innerHeight) * 2 - 1,
+      };
+      addRevealPoint(e.clientX, e.clientY);
+      startTick();
+    };
+
+    const handleMouseLeave = () => {
+      lastMousePosRef.current = null;
+      revealPointsRef.current = [];
+      needsRedrawRef.current = true;
+      startTick();
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        lastHoverTimeRef.current = performance.now();
+        const t = e.touches[0];
+        const { innerWidth, innerHeight } = window;
+        mouseTargetRef.current = {
+          x: ((t.clientX / innerWidth) * 2 - 1) * 0.3,
+          y: ((t.clientY / innerHeight) * 2 - 1) * 0.3,
+        };
+        addRevealPoint(t.clientX, t.clientY);
+        startTick();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      lastMousePosRef.current = null;
+      revealPointsRef.current = [];
+      needsRedrawRef.current = true;
+      startTick();
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    triggerRedraw();
+
+    // IntersectionObserver pauses canvas rendering loop completely when scrolled past Hero
+    const heroEl = containerRef.current;
+    let observer: IntersectionObserver | null = null;
+    if (heroEl) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const isAtTop = window.scrollY < (heroEl.offsetHeight || 1200);
+            const isVisible = entry.isIntersecting || isAtTop;
+            isHeroVisibleRef.current = isVisible;
+            if (isVisible) {
+              handleScroll();
+              triggerRedraw();
+            } else {
+              isRafRunningRef.current = false;
+              if (rafId) cancelAnimationFrame(rafId);
+            }
+          }
+        },
+        { rootMargin: "100px 0px" }
+      );
+      observer.observe(heroEl);
+    }
 
     return () => {
       window.removeEventListener("resize", updateCanvasSize);
@@ -439,14 +614,10 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
       window.removeEventListener("mouseleave", handleMouseLeave);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
-      cancelAnimationFrame(rafId);
+      if (observer) observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
-
-  const currentFrameNumber = Math.min(
-    TOTAL_FRAMES,
-    Math.max(1, Math.round(scrollProgress * (TOTAL_FRAMES - 1)) + 1)
-  );
 
   return (
     <section
@@ -456,11 +627,12 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         revealPointsRef.current = [];
         lastMousePosRef.current = null;
       }}
-      className="relative w-full h-[400vh] bg-[#07080a] select-none"
+      className="relative w-full h-[220vh] bg-[#07080a] select-none"
       aria-label="Interactive Video Scroll Hero"
     >
       {/* Pinned Sticky Viewport Window */}
       <div
+        ref={stageRef}
         className="sticky top-0 w-full h-screen overflow-hidden bg-[#07080a] flex items-center justify-center will-change-transform z-10"
         style={{ position: "sticky", top: 0, height: "100vh" }}
       >
@@ -468,13 +640,25 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         <div
           className="absolute inset-0 w-full h-full will-change-transform transition-transform duration-300 ease-out"
           style={{
-            transform: `perspective(1000px) translate3d(${hudCoords.x * 22}px, ${hudCoords.y * 15}px, 0) rotateX(${-hudCoords.y * 3.5}deg) rotateY(${hudCoords.x * 4.5}deg) scale(1.04)`,
+            transform: `perspective(1000px) translate3d(calc(var(--hud-x, 0) * 22px), calc(var(--hud-y, 0) * 15px), 0) rotateX(calc(var(--hud-y, 0) * -3.5deg)) rotateY(calc(var(--hud-x, 0) * 4.5deg)) scale(1.04)`,
           }}
         >
+          {/* Instant Poster Image — Guarantees immediate visual frame on refresh */}
+          <img
+            src="/frames/hero/frame_000.jpg"
+            alt="Preethish D P"
+            className="absolute inset-0 w-full h-full object-cover block"
+            style={{
+              zIndex: 0,
+            }}
+            suppressHydrationWarning
+          />
+
           <canvas
             ref={canvasRef}
-            className="w-full h-full object-cover block"
+            className="relative z-[1] w-full h-full object-cover block"
             aria-label="Preethish D P — Cinematic Video Sequence"
+            suppressHydrationWarning
           />
 
           {/* Deep Vignette & Studio Lighting Edge Blending */}
@@ -500,7 +684,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92vw] max-w-7xl h-[82vh] pointer-events-none opacity-25 transition-transform duration-500 ease-out"
             style={{
-              transform: `translate3d(calc(-50% + ${hudCoords.x * 12}px), calc(-50% + ${hudCoords.y * 8}px), 0)`,
+              transform: `translate3d(calc(-50% + var(--hud-x, 0) * 12px), calc(-50% + var(--hud-y, 0) * 8px), 0)`,
             }}
           >
             {/* Viewfinder Corners */}
@@ -516,16 +700,14 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
           {/* Top Left: Camera Status or Alter Ego Alert */}
           {isAlterEgoActive ? (
             <div
-              className={`flex items-center gap-2.5 px-4 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono tracking-widest animate-pulse shadow-2xl transition-all duration-300 ${
-                alterEgoChar === "noir"
-                  ? "border-zinc-300/70 bg-black/90 text-white shadow-[0_0_25px_rgba(255,255,255,0.35)]"
-                  : "border-red-500/60 bg-black/85 text-red-400 shadow-[0_0_25px_rgba(225,29,72,0.45)]"
-              }`}
+              className={`flex items-center gap-2.5 px-4 py-1.5 rounded-full border backdrop-blur-md text-[11px] font-mono tracking-widest animate-pulse shadow-2xl transition-all duration-300 ${alterEgoChar === "noir"
+                ? "border-zinc-300/70 bg-black/90 text-white shadow-[0_0_25px_rgba(255,255,255,0.35)]"
+                : "border-red-500/60 bg-black/85 text-red-400 shadow-[0_0_25px_rgba(225,29,72,0.45)]"
+                }`}
             >
               <span
-                className={`w-2 h-2 rounded-full animate-ping ${
-                  alterEgoChar === "noir" ? "bg-white" : "bg-[#e11d48]"
-                }`}
+                className={`w-2 h-2 rounded-full animate-ping ${alterEgoChar === "noir" ? "bg-white" : "bg-[#e11d48]"
+                  }`}
               />
               <span className="font-bold text-white tracking-widest">ALTER EGO:</span>
               <span className={`font-bold ${alterEgoChar === "noir" ? "text-white" : "text-[#e11d48]"}`}>
@@ -539,7 +721,7 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
               <span className="text-zinc-600">|</span>
               <span className="hidden sm:inline">24 FPS</span>
               <span className="text-zinc-600 hidden sm:inline">|</span>
-              <span className="text-zinc-400">FRM: {String(currentFrameNumber).padStart(3, "0")}/{TOTAL_FRAMES}</span>
+              <span ref={frameNumRef} className="text-zinc-400">FRM: 001/{TOTAL_FRAMES}</span>
             </div>
           )}
         </div>
@@ -548,11 +730,10 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
         <div className="absolute inset-0 z-30 pointer-events-none flex flex-col justify-between p-6 sm:p-10 md:p-14 lg:p-16">
           {/* Upper Left Monogram */}
           <div
-            className={`transition-all duration-1000 ease-out pointer-events-auto ${
-              isRevealed ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8"
-            }`}
+            className={`transition-all duration-1000 ease-out pointer-events-auto ${isRevealed ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8"
+              }`}
             style={{
-              transform: `translate3d(${hudCoords.x * 6}px, ${hudCoords.y * 4}px, 0)`,
+              transform: `translate3d(calc(var(--hud-x, 0) * 6px), calc(var(--hud-y, 0) * 4px), 0)`,
             }}
           >
             <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tighter text-white leading-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)] max-w-xl xl:max-w-2xl">
@@ -567,11 +748,10 @@ export default function ScrollVideoHero({ initialSequence = "hero" }: ScrollVide
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end w-full">
             {/* Lower Left: Titles & CTA */}
             <div
-              className={`lg:col-span-8 transition-all duration-1000 delay-300 ease-out pointer-events-auto ${
-                isRevealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-              }`}
+              className={`lg:col-span-8 transition-all duration-1000 delay-300 ease-out pointer-events-auto ${isRevealed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                }`}
               style={{
-                transform: `translate3d(${hudCoords.x * 8}px, ${hudCoords.y * 6}px, 0)`,
+                transform: `translate3d(calc(var(--hud-x, 0) * 8px), calc(var(--hud-y, 0) * 6px), 0)`,
               }}
             >
               {/* Identity List */}

@@ -257,30 +257,41 @@ export default function Education() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentStepFraction, setCurrentStepFraction] = useState(0);
 
-  // Scroll listener with generous scroll distance for smooth, deliberate stepping
+  // Scroll listener tracking continuous progress across milestones with rAF throttle
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const container = containerRef.current;
-      if (!container) return;
+      if (ticking) return;
+      ticking = true;
 
-      const rect = container.getBoundingClientRect();
-      const scrollableDistance = rect.height - window.innerHeight;
-      if (scrollableDistance <= 0) return;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const container = containerRef.current;
+        if (!container) return;
 
-      // Progress normalized from 0.0 to 1.0
-      const rawProgress = -rect.top / scrollableDistance;
-      const progress = Math.max(0, Math.min(1, rawProgress));
-      setScrollProgress(progress);
+        const rect = container.getBoundingClientRect();
+        // Skip computations if section is completely outside the viewport
+        if (rect.bottom < -60 || rect.top > window.innerHeight + 60) return;
 
-      // Map progress with generous dwell across the 6 milestones
-      const count = MILESTONES.length;
-      const floatIndex = progress * count;
-      const activeIdx = Math.min(count - 1, Math.floor(floatIndex));
-      setCurrentIndex(activeIdx);
+        const scrollableDistance = rect.height - window.innerHeight;
+        if (scrollableDistance <= 0) return;
 
-      // Fraction within current milestone (0.0 to 1.0)
-      const fraction = Math.min(1, Math.max(0, floatIndex - activeIdx));
-      setCurrentStepFraction(fraction);
+        // Progress normalized from 0.0 to 1.0
+        const rawProgress = -rect.top / scrollableDistance;
+        const progress = Math.max(0, Math.min(1, rawProgress));
+        setScrollProgress(progress);
+
+        // Map progress with generous, comfortable dwell across the 6 milestones
+        const count = MILESTONES.length;
+        const rawIndex = progress * count;
+        const activeIdx = Math.min(count - 1, Math.floor(rawIndex));
+        setCurrentIndex(activeIdx);
+
+        // Fraction within current milestone (0.0 to 1.0)
+        const fraction = Math.min(1, Math.max(0, rawIndex - activeIdx));
+        setCurrentStepFraction(fraction);
+      });
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -289,7 +300,7 @@ export default function Education() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Smooth scroll directly to a specific milestone
+  // Smooth scroll directly to a specific milestone with comfortable centering
   const scrollToMilestone = (index: number) => {
     const container = containerRef.current;
     if (!container) return;
@@ -313,7 +324,7 @@ export default function Education() {
     <section
       id="education"
       ref={containerRef}
-      className="relative bg-[#07080a] text-white border-t border-white/[0.08] min-h-[750vh] select-none"
+      className="relative bg-[#07080a] text-white border-t border-white/[0.08] min-h-[500vh] select-none"
     >
       {/* ──────────────────────────────────────────────────────────
           STICKY FULL-SCREEN TIMELINE VIEWPORT
@@ -448,10 +459,10 @@ export default function Education() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeMilestone.id}
-                initial={{ opacity: 0, scale: 0.97, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.97, y: -15 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="w-full bg-[#0e1015] border border-white/[0.08] rounded-2xl p-6 sm:p-8 lg:p-10 relative overflow-hidden shadow-2xl"
               >
                 {/* Viewfinder Corner Reticles */}
@@ -498,7 +509,7 @@ export default function Education() {
                         <span className="px-2.5 py-0.5 rounded bg-[#e11d48]/10 border border-[#e11d48]/30 text-[#e11d48] font-bold">
                           {activeMilestone.categoryBadge}
                         </span>
-                        <span className="text-zinc-600">//</span>
+                        <span className="text-zinc-600">{"//"}</span>
                         <span className="text-zinc-400">{activeMilestone.period}</span>
                       </div>
 

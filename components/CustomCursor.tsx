@@ -7,48 +7,75 @@ export default function CustomCursor() {
   const ringRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [isTouchDevice, setIsTouchDevice] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const isTouchDeviceRef = useRef(false);
 
   useEffect(() => {
-    // Check if device is touch / mobile
-    const checkTouch = () => {
-      return (
-        "ontouchstart" in window ||
-        navigator.maxTouchPoints > 0 ||
-        window.matchMedia("(pointer: coarse)").matches
-      );
-    };
+    const isTouch =
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      window.matchMedia("(pointer: coarse)").matches;
+    isTouchDeviceRef.current = isTouch;
+    setMounted(true);
 
-    if (checkTouch()) {
-      setIsTouchDevice(true);
+    if (isTouch) {
       return;
     }
-
-    setIsTouchDevice(false);
 
     let mouseX = -100;
     let mouseY = -100;
     let ringX = -100;
     let ringY = -100;
-    let rafId: number;
+    let rafId: number = 0;
+    let isRafRunning = false;
+    let isHoveredCurrent = false;
+
+    const render = () => {
+      ringX += (mouseX - ringX) * 0.18;
+      ringY += (mouseY - ringY) * 0.18;
+
+      if (ringRef.current) {
+        ringRef.current.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+      }
+
+      // If ring has settled close to cursor, sleep the RAF loop to save CPU/GPU cycles
+      if (Math.abs(mouseX - ringX) < 0.15 && Math.abs(mouseY - ringY) < 0.15) {
+        isRafRunning = false;
+        return;
+      }
+
+      rafId = requestAnimationFrame(render);
+    };
+
+    const startRaf = () => {
+      if (!isRafRunning) {
+        isRafRunning = true;
+        rafId = requestAnimationFrame(render);
+      }
+    };
 
     const onMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
 
-      if (!isVisible) setIsVisible(true);
+      setIsVisible((prev) => (prev ? prev : true));
 
       if (dotRef.current) {
         dotRef.current.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
       }
 
-      // Check if hovering interactive element
+      startRaf();
+
+      // Check if hovering interactive element - only update state if value actually changed
       const target = e.target as HTMLElement | null;
       if (target) {
-        const interactive = target.closest(
-          'a, button, input, textarea, select, [role="button"], [data-cursor-expand]'
+        const interactive = Boolean(
+          target.closest('a, button, input, textarea, select, [role="button"], [data-cursor-expand]')
         );
-        setIsHovered(!!interactive);
+        if (interactive !== isHoveredCurrent) {
+          isHoveredCurrent = interactive;
+          setIsHovered(interactive);
+        }
       }
     };
 
@@ -60,32 +87,19 @@ export default function CustomCursor() {
       setIsVisible(true);
     };
 
-    // Smooth lerp trailing for ring
-    const render = () => {
-      ringX += (mouseX - ringX) * 0.16;
-      ringY += (mouseY - ringY) * 0.16;
-
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
-      }
-
-      rafId = requestAnimationFrame(render);
-    };
-
     window.addEventListener("mousemove", onMouseMove, { passive: true });
-    document.addEventListener("mouseleave", onMouseLeave);
-    document.addEventListener("mouseenter", onMouseEnter);
-    rafId = requestAnimationFrame(render);
+    document.addEventListener("mouseleave", onMouseLeave, { passive: true });
+    document.addEventListener("mouseenter", onMouseEnter, { passive: true });
 
     return () => {
       window.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseleave", onMouseLeave);
       document.removeEventListener("mouseenter", onMouseEnter);
-      cancelAnimationFrame(rafId);
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [isVisible]);
+  }, []);
 
-  if (isTouchDevice) return null;
+  if (!mounted || isTouchDeviceRef.current) return null;
 
   return (
     <>
