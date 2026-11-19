@@ -54,7 +54,7 @@ const CHANNELS: ChannelData[] = [
       "Precision video editing, multi-camera synchronization, Rec.709/Log color grading, and narrative rhythm pacing for commercial and cinematic releases.",
     accentColor: "#e11d48",
     badge: "DAVINCI STUDIO",
-    primaryImage: "/projects/film_edit.jpg",
+    primaryImage: "/images/videoediting.jpg",
     coreCompetencies: [
       { name: "DaVinci Resolve Color Grading", level: "Expert", pct: 96, detail: "Primary balance, curves, node trees & LUT conforming" },
       { name: "Non-Linear Video Editing (NLE)", level: "Specialist", pct: 94, detail: "Frame-accurate narrative pacing in Premiere Pro & FCPX" },
@@ -77,7 +77,7 @@ const CHANNELS: ChannelData[] = [
       "Engineering distinct visual brand languages, multi-channel marketing collateral, typography specimens, and comprehensive design manuals.",
     accentColor: "#fbbf24",
     badge: "ADOBE SUITE",
-    primaryImage: "/projects/brand_design.jpg",
+    primaryImage: "/images/brandcommunication.jpg",
     coreCompetencies: [
       { name: "Vector Identity Architecture", level: "Mastery", pct: 97, detail: "Logomarks, monogram glyphs & geometric construction" },
       { name: "Editorial Typography & Hierarchy", level: "Expert", pct: 95, detail: "Font pairings, kerning systems, optical balance" },
@@ -100,7 +100,7 @@ const CHANNELS: ChannelData[] = [
       "Accelerating online brand visibility through programmatic SEO architecture, keyword taxonomy engineering, Google Ads campaign management, and analytics.",
     accentColor: "#38bdf8",
     badge: "GOOGLE ADS & SEO",
-    primaryImage: "/projects/digital_marketing.jpg",
+    primaryImage: "/images/digitalmarketing.jpg",
     coreCompetencies: [
       { name: "Technical SEO & Site Audits", level: "Expert", pct: 94, detail: "Crawlability, Core Web Vitals, schema architecture" },
       { name: "Google & Meta Paid Campaigns", level: "Specialist", pct: 92, detail: "High-intent PPC bidding, audience segmentation & ROAS" },
@@ -123,7 +123,7 @@ const CHANNELS: ChannelData[] = [
       "Crafting arresting camera compositions through optical axis alignment, dramatic key-to-fill lighting ratios, 2.39:1 anamorphic framing, and visual pacing.",
     accentColor: "#a855f7",
     badge: "CINE PRIMES",
-    primaryImage: "/projects/maritime_cinematography.jpg",
+    primaryImage: "/images/cinematography.jpg",
     coreCompetencies: [
       { name: "Camera Movement & Optical Axis", level: "Advanced", pct: 93, detail: "Gimbal tracking, slow dolly sweeps, handheld pacing" },
       { name: "Three-Point Lighting Setups", level: "Expert", pct: 95, detail: "Key, fill, rim lighting, soft diffusion & negative fill" },
@@ -230,7 +230,7 @@ function ColorGradingLab() {
       {/* Visual Live Graded Footage Viewport */}
       <div className="relative h-56 sm:h-64 rounded-xl overflow-hidden border border-white/15 bg-black shadow-2xl">
         <Image
-          src="/projects/film_edit.jpg"
+          src="/images/videoediting.jpg"
           alt="DaVinci Resolve Real-Time Color Grade Simulation"
           fill
           priority
@@ -778,7 +778,7 @@ function CineOpticsLab() {
           style={{ transform: `scale(${scaleValue})` }}
         >
           <Image
-            src="/projects/maritime_cinematography.jpg"
+            src="/images/cinematography.jpg"
             alt="Cinematography and Optical Framing Viewfinder"
             fill
             priority

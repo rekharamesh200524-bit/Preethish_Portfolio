@@ -22,7 +22,7 @@ const PROJECTS: ProjectItem[] = [
     category: "Video Editing",
     description:
       "Evaluating rough assemblies, conforming timecodes, crafting transition pacing, and preparing final cuts for high-profile cinema production.",
-    image: "/projects/film_edit.jpg",
+    image: "/images/videoediting.jpg",
     deliverables: ["Timecode Assembly", "DaVinci Resolve Grade", "Transition Timing", "Final Delivery"],
     role: "Assistant Film Editor",
     organization: "Sathya Jyothi Film Production Company",
@@ -33,7 +33,7 @@ const PROJECTS: ProjectItem[] = [
     category: "Branding",
     description:
       "Comprehensive corporate brand guidelines, editorial type specimens, and multi-channel campaign collateral engineered for consistent brand expansion.",
-    image: "/projects/brand_design.jpg",
+    image: "/images/brandcommunication.jpg",
     deliverables: ["Visual Identity", "Typography Systems", "Brand Manual", "Marketing Collateral"],
     role: "Graphic Designer",
     organization: "Populus Empowerment Network & I-Net Labs",
@@ -44,7 +44,7 @@ const PROJECTS: ProjectItem[] = [
     category: "Digital Marketing",
     description:
       "End-to-end technical site audits, keyword taxonomy architectures, and targeted Google Ads campaign structures boosting digital engagement.",
-    image: "/projects/digital_marketing.jpg",
+    image: "/images/digitalmarketing.jpg",
     deliverables: ["Site Audits", "Keyword Strategy", "Google Ads", "Conversion Reporting"],
     role: "Digital Marketing Specialist",
     organization: "I-Net Secure Labs Pvt. Ltd.",
@@ -55,7 +55,7 @@ const PROJECTS: ProjectItem[] = [
     category: "Cinematography",
     description:
       "Visual documentary study analyzing maritime logistics, container terminal vessel turnarounds, and operational risk mitigation in high-density port environments.",
-    image: "/projects/maritime_cinematography.jpg",
+    image: "/images/cinematography.jpg",
     deliverables: ["Operational Study", "Visual Framing", "Terminal Workflow", "Risk Analysis"],
     role: "Operations & Visual Research",
     organization: "DP World Terminal Studies",
