@@ -65,7 +65,7 @@ const MILESTONES: EducationMilestone[] = [
       "Vector typography hierarchy, branding systems, and visual media communication.",
     ],
     skills: ["Cinematography", "Video Editing", "Visual Hierarchy", "Typography", "Media Sociology"],
-    image: "/projects/brand_design.jpg",
+    image: "/images/Image (11).jpg",
     field: "VISUAL COMMUNICATION",
   },
   {
@@ -89,7 +89,7 @@ const MILESTONES: EducationMilestone[] = [
       "Broadcast ProRes 422 delivery specifications and audio sync.",
     ],
     skills: ["DaVinci Resolve", "Premiere Pro CC", "Color Grading", "Audio Conforming", "Multicam Sync"],
-    image: "/projects/film_edit.jpg",
+    image: "/images/Image (12).jpg",
     field: "FILM POST-PRODUCTION",
   },
   {
@@ -113,7 +113,7 @@ const MILESTONES: EducationMilestone[] = [
       "Consumer analytics, organizational leadership, and executive decision-making.",
     ],
     skills: ["Operations Strategy", "Brand Leadership", "Consumer Analytics", "Strategic Marketing", "Process Optimization"],
-    image: "/projects/crm_sales_operations.jpg",
+    image: "/images/Image (13).jpg",
     field: "OPERATIONS & STRATEGY",
   },
   {
@@ -137,7 +137,7 @@ const MILESTONES: EducationMilestone[] = [
       "Synthesized operational throughput improvements for port logistics.",
     ],
     skills: ["Maritime Logistics", "Terminal Workflows", "Vessel Risk Control", "Empirical Research", "Throughput Modeling"],
-    image: "/projects/maritime_cinematography.jpg",
+    image: "/images/Image (14).jpg",
     field: "PORT OPERATIONS & LOGISTICS",
   },
   {
@@ -161,7 +161,7 @@ const MILESTONES: EducationMilestone[] = [
       "Delivered strategic engagement frameworks for executive management.",
     ],
     skills: ["Quantitative Surveying", "HR Frameworks", "Attrition Modeling", "Data Synthesis", "Corporate Strategy"],
-    image: "/projects/digital_marketing.jpg",
+    image: "/images/Image (15).jpg",
     field: "ORGANIZATIONAL BEHAVIOR",
   },
   {
@@ -185,7 +185,7 @@ const MILESTONES: EducationMilestone[] = [
       "Structured business writing, proposal articulation, and documentation.",
     ],
     skills: ["Executive Presentation", "Corporate Diplomacy", "Stakeholder Negotiation", "Business Reporting"],
-    image: "/projects/brand_design.jpg",
+    image: "/images/Image (16).jpg",
     field: "ENTERPRISE COMMUNICATIONS",
   },
 ];
