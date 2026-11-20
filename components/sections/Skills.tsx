@@ -54,7 +54,7 @@ const CHANNELS: ChannelData[] = [
       "Precision video editing, multi-camera synchronization, Rec.709/Log color grading, and narrative rhythm pacing for commercial and cinematic releases.",
     accentColor: "#e11d48",
     badge: "DAVINCI STUDIO",
-    primaryImage: "/images/videoediting.jpg",
+    primaryImage: "/images/Image (6).jpg",
     coreCompetencies: [
       { name: "DaVinci Resolve Color Grading", level: "Expert", pct: 96, detail: "Primary balance, curves, node trees & LUT conforming" },
       { name: "Non-Linear Video Editing (NLE)", level: "Specialist", pct: 94, detail: "Frame-accurate narrative pacing in Premiere Pro & FCPX" },
@@ -123,7 +123,7 @@ const CHANNELS: ChannelData[] = [
       "Crafting arresting camera compositions through optical axis alignment, dramatic key-to-fill lighting ratios, 2.39:1 anamorphic framing, and visual pacing.",
     accentColor: "#a855f7",
     badge: "CINE PRIMES",
-    primaryImage: "/images/cinematography.jpg",
+    primaryImage: "/images/Image (7).jpg",
     coreCompetencies: [
       { name: "Camera Movement & Optical Axis", level: "Advanced", pct: 93, detail: "Gimbal tracking, slow dolly sweeps, handheld pacing" },
       { name: "Three-Point Lighting Setups", level: "Expert", pct: 95, detail: "Key, fill, rim lighting, soft diffusion & negative fill" },
@@ -230,7 +230,7 @@ function ColorGradingLab() {
       {/* Visual Live Graded Footage Viewport */}
       <div className="relative h-56 sm:h-64 rounded-xl overflow-hidden border border-white/15 bg-black shadow-2xl">
         <Image
-          src="/images/videoediting.jpg"
+          src="/images/Image (6).jpg"
           alt="DaVinci Resolve Real-Time Color Grade Simulation"
           fill
           priority
@@ -778,7 +778,7 @@ function CineOpticsLab() {
           style={{ transform: `scale(${scaleValue})` }}
         >
           <Image
-            src="/images/cinematography.jpg"
+            src="/images/Image (7).jpg"
             alt="Cinematography and Optical Framing Viewfinder"
             fill
             priority
