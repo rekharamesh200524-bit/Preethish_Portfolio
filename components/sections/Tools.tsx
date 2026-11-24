@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
 
 interface MarqueeCard {
   id: string;
@@ -129,9 +128,9 @@ export default function Tools() {
       <div className="relative z-10 max-w-7xl w-full mx-auto px-5 sm:px-8 md:px-12 flex items-start justify-between gap-6 shrink-0">
         <div>
           <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-[1.08]">
-            Tools,
+            Engineered
             <br />
-            Engineered to Create.
+            to Create.
           </h2>
           <p className="mt-2 font-mono text-[9px] sm:text-[11px] uppercase tracking-[0.32em] text-[#e11d48]">
             PRODUCTION SUITE // CREATIVE ARSENAL
@@ -207,18 +206,11 @@ export default function Tools() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#e11d48] animate-pulse" />
                 </div>
 
-                {/* Bottom-Left Number Identifier (Matching Screenshot: 01, 02, etc.) */}
+                {/* Bottom-Left Number Identifier */}
                 <div className="absolute bottom-2 left-2 sm:bottom-2.5 sm:left-2.5 z-20 pointer-events-none">
                   <span className="font-mono text-[11px] sm:text-xs font-bold text-white/95 drop-shadow-md tracking-wider">
                     {item.num}
                   </span>
-                </div>
-
-                {/* Bottom-Right Translucent Action Button (Matching Screenshot: ↗ in circle) */}
-                <div className="absolute bottom-2 right-2 sm:bottom-2.5 sm:right-2.5 z-20 pointer-events-none">
-                  <div className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-full bg-black/60 backdrop-blur-md border border-white/25 flex items-center justify-center text-white/90 group-hover:bg-[#e11d48] group-hover:border-[#e11d48] transition-colors duration-200 shadow-md">
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </div>
                 </div>
               </div>
             );
