@@ -163,7 +163,7 @@ export default function Tools() {
 
         {/* Infinite Marquee Track with items-center so portrait cards align seamlessly */}
         <div
-          className="flex items-center gap-4 sm:gap-5 w-max"
+          className="flex items-center gap-3 sm:gap-4 w-max"
           style={{
             animation: "marqueeTrack 45s linear infinite",
             animationPlayState: isPaused ? "paused" : "running",
@@ -176,13 +176,13 @@ export default function Tools() {
                 key={`${item.id}-${idx}`}
                 onMouseEnter={() => setActiveCard(item)}
                 onMouseLeave={() => setActiveCard(null)}
-                className={`group relative rounded-xl sm:rounded-2xl overflow-hidden bg-black/60 backdrop-blur-md border transition-all duration-300 cursor-pointer shadow-2xl shrink-0 flex items-center justify-center ${
+                className={`group relative rounded-lg sm:rounded-xl overflow-hidden bg-black/60 backdrop-blur-md border transition-all duration-300 cursor-pointer shadow-2xl shrink-0 flex items-center justify-center ${
                   item.isPortrait
-                    ? "w-[170px] sm:w-[200px] md:w-[220px] aspect-[3/4]"
-                    : "w-[220px] sm:w-[260px] md:w-[290px] aspect-[16/10]"
+                    ? "w-[115px] sm:w-[135px] md:w-[155px] aspect-[3/4]"
+                    : "w-[150px] sm:w-[175px] md:w-[205px] aspect-[16/10]"
                 } ${
                   isHovered
-                    ? "border-red-500/90 scale-[1.03] shadow-[0_0_35px_rgba(225,29,72,0.45)] z-30"
+                    ? "border-red-500/90 scale-[1.03] shadow-[0_0_25px_rgba(225,29,72,0.45)] z-30"
                     : "border-white/15 hover:border-red-500/60"
                 }`}
               >
@@ -191,7 +191,7 @@ export default function Tools() {
                   src={item.image}
                   alt={item.name}
                   fill
-                  sizes="(max-width: 768px) 240px, 300px"
+                  sizes="(max-width: 768px) 180px, 210px"
                   className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
                 />
 
@@ -199,16 +199,16 @@ export default function Tools() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-75 group-hover:opacity-95 transition-opacity duration-300 pointer-events-none" />
 
                 {/* Top Tool Badge / Title on hover */}
-                <div className="absolute top-2 left-2 right-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none">
-                  <span className="bg-black/85 backdrop-blur-md border border-red-500/40 text-white font-mono text-[8.5px] px-2 py-0.5 rounded tracking-wider truncate max-w-[85%]">
+                <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 pointer-events-none">
+                  <span className="bg-black/85 backdrop-blur-md border border-red-500/40 text-white font-mono text-[7.5px] sm:text-[8px] px-1.5 py-0.5 rounded tracking-wider truncate max-w-[85%]">
                     {item.name}
                   </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#e11d48] animate-pulse" />
+                  <span className="w-1 h-1 rounded-full bg-[#e11d48] animate-pulse" />
                 </div>
 
                 {/* Bottom-Left Number Identifier */}
-                <div className="absolute bottom-2 left-2 sm:bottom-2.5 sm:left-2.5 z-20 pointer-events-none">
-                  <span className="font-mono text-[11px] sm:text-xs font-bold text-white/95 drop-shadow-md tracking-wider">
+                <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 z-20 pointer-events-none">
+                  <span className="font-mono text-[9px] sm:text-[10px] font-bold text-white/95 drop-shadow-md tracking-wider">
                     {item.num}
                   </span>
                 </div>
